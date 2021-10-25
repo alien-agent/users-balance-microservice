@@ -1,0 +1,3 @@
+server_port: 8080
+storage_url: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+driver: "pgx"
