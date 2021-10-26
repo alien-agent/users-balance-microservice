@@ -3,7 +3,6 @@ package deposit
 import (
 	"context"
 	"database/sql"
-	"errors"
 
 	"github.com/google/uuid"
 	"users-balance-microservice/internal/entity"
@@ -20,8 +19,6 @@ type Repository interface {
 	// Update updates the given Deposit to db.
 	Update(ctx context.Context, deposit entity.Deposit) error
 }
-
-var NegativeBalanceError = errors.New("cannot save deposit with negative balance")
 
 // repository persists Deposit in database
 type repository struct {
@@ -62,8 +59,5 @@ func (r repository) Create(ctx context.Context, deposit entity.Deposit) error {
 // Update saves the changes to the Deposit in the database.
 // Deposits with negative balance are rejected.
 func (r repository) Update(ctx context.Context, deposit entity.Deposit) error {
-	if deposit.Balance < 0{
-		return NegativeBalanceError
-	}
 	return r.db.With(ctx).Model(&deposit).Update()
 }

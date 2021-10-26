@@ -2,7 +2,6 @@ package transaction
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
@@ -79,9 +78,6 @@ func (s service) modifyBalance(ctx context.Context, ownerId uuid.UUID, amount in
 	}
 
 	dep.Balance += amount
-	if dep.Balance < 0 {
-		return fmt.Errorf("not enough funds to perform transaction")
-	}
 
 	return s.depositRepo.Update(ctx, dep)
 }
@@ -126,9 +122,9 @@ func (s service) GetForUser(ctx context.Context, req GetForUserRequest) ([]entit
 	if req.OrderBy != "" {
 		order = req.OrderBy
 		if req.Ascending {
-			order += "ASC"
+			order += " ASC"
 		} else {
-			order += "DESC"
+			order += " DESC"
 		}
 	}
 

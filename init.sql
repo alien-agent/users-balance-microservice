@@ -1,19 +1,19 @@
 CREATE TABLE IF NOT EXISTS Deposit(
     owner_id UUID PRIMARY KEY,
-    balance INT NOT NULL
+    balance INT NOT NULL,
+
+    CONSTRAINT chk_balance_not_negative
+    CHECK(balance >= 0) /* super-safe :) */
 );
 
 CREATE TABLE IF NOT EXISTS Transaction(
     id serial PRIMARY KEY,
-    sender_id UUID,
-    recipient_id UUID,
+    sender_id UUID NULL,
+    recipient_id UUID NULL,
     amount INT NOT NULL,
     description VARCHAR(100),
     transaction_date TIMESTAMP NOT NULL,
-    CONSTRAINT fk_senderid
-        FOREIGN KEY (sender_id)
-            REFERENCES Deposit(owner_id),
-    CONSTRAINT fk_recipientid
-        FOREIGN KEY (recipient_id)
-            REFERENCES Deposit(owner_id)
+
+    CONSTRAINT chk_amount_not_negative
+    CHECK(amount >= 0)
 );
