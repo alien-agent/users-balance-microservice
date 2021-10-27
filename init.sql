@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS Transaction(
     sender_id UUID NULL,
     recipient_id UUID NULL,
     amount INT NOT NULL,
-    description VARCHAR(100),
+    description VARCHAR(100) NULL,
     transaction_date TIMESTAMP NOT NULL,
 
     CONSTRAINT chk_amount_not_negative
