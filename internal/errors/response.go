@@ -46,28 +46,6 @@ func NotFound(msg string) ErrorResponse {
 	}
 }
 
-// Unauthorized creates a new error response representing an authentication/authorization failure (HTTP 401)
-func Unauthorized(msg string) ErrorResponse {
-	if msg == "" {
-		msg = "You are not authenticated to perform the requested action."
-	}
-	return ErrorResponse{
-		Status:  http.StatusUnauthorized,
-		Message: msg,
-	}
-}
-
-// Forbidden creates a new error response representing an authorization failure (HTTP 403)
-func Forbidden(msg string) ErrorResponse {
-	if msg == "" {
-		msg = "You are not authorized to perform the requested action."
-	}
-	return ErrorResponse{
-		Status:  http.StatusForbidden,
-		Message: msg,
-	}
-}
-
 // BadRequest creates a new error response representing a bad request (HTTP 400)
 func BadRequest(msg string) ErrorResponse {
 	if msg == "" {
