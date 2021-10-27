@@ -58,7 +58,7 @@ func (r CreateOnewayTransactionRequest) Validate() error {
 }
 
 type GetHistoryRequest struct {
-	OwnerId        uuid.UUID `json:"owner_id"`
+	OwnerId        string `json:"owner_id"`
 	Offset         int       `json:"offset,omitempty"`
 	Limit          int       `json:"limit,omitempty"`
 	OrderBy        string    `json:"order_by,omitempty"`
@@ -163,6 +163,7 @@ func (s service) GetForUser(ctx context.Context, req GetHistoryRequest) ([]entit
 		return nil, err
 	}
 
+	ownerUUID := uuid.MustParse(req.OwnerId)
 	order := ""
 	if req.OrderBy != "" {
 		order = req.OrderBy
@@ -171,5 +172,5 @@ func (s service) GetForUser(ctx context.Context, req GetHistoryRequest) ([]entit
 		}
 	}
 
-	return s.transactionRepo.GetForUser(ctx, req.OwnerId, order, req.Offset, req.Limit)
+	return s.transactionRepo.GetForUser(ctx, ownerUUID, order, req.Offset, req.Limit)
 }

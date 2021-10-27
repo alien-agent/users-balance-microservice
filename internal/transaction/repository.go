@@ -16,7 +16,7 @@ type Repository interface {
 	Create(ctx context.Context, transaction entity.Transaction) error
 	// GetById returns the Transaction with the given id.
 	GetById(ctx context.Context, id string) (entity.Transaction, error)
-	// GetForUser returns all transactions which has either SenderId or RecipientId equal to given id.
+	// GetForUser returns a list of all transactions related to given userId.
 	GetForUser(ctx context.Context, ownerId uuid.UUID, order string, offset, limit int) ([]entity.Transaction, error)
 }
 
