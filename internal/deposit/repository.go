@@ -18,6 +18,8 @@ type Repository interface {
 	Create(ctx context.Context, deposit entity.Deposit) error
 	// Update updates the given Deposit to db.
 	Update(ctx context.Context, deposit entity.Deposit) error
+	// Count returns the number of Deposit records in the database.
+	Count(ctx context.Context) (int, error)
 }
 
 // repository persists Deposit in database
@@ -38,7 +40,7 @@ func (r repository) Get(ctx context.Context, ownerId uuid.UUID) (entity.Deposit,
 	err := r.db.With(ctx).Select().Model(ownerId, &deposit)
 
 	// Create if does not exist
-	if err == sql.ErrNoRows{
+	if err == sql.ErrNoRows {
 		err = r.Create(ctx, entity.Deposit{
 			OwnerId: ownerId,
 			Balance: 0,
@@ -59,4 +61,11 @@ func (r repository) Create(ctx context.Context, deposit entity.Deposit) error {
 // Update saves the changes to the Deposit in the database.
 func (r repository) Update(ctx context.Context, deposit entity.Deposit) error {
 	return r.db.With(ctx).Model(&deposit).Update()
+}
+
+// Count returns the number of Deposit records in the database.
+func (r repository) Count(ctx context.Context) (int, error) {
+	var count int
+	err := r.db.With(ctx).Select("COUNT(*)").From("deposit").Row(&count)
+	return count, err
 }

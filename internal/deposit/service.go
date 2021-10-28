@@ -13,6 +13,7 @@ import (
 // Service encapsulates usecase logic for deposits.
 type Service interface {
 	Get(ctx context.Context, req GetBalanceRequest) (Deposit, error)
+	Count(ctx context.Context) (int, error)
 }
 
 // Deposit represents the data about an album.
@@ -65,4 +66,8 @@ func (s service) Create(ctx context.Context, ownerId uuid.UUID) (Deposit, error)
 		return Deposit{}, err
 	}
 	return Deposit{newDeposit}, nil
+}
+
+func (s service) Count(ctx context.Context) (int, error){
+	return s.repo.Count(ctx)
 }
