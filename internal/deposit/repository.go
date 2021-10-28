@@ -57,7 +57,6 @@ func (r repository) Create(ctx context.Context, deposit entity.Deposit) error {
 }
 
 // Update saves the changes to the Deposit in the database.
-// Deposits with negative balance are rejected.
 func (r repository) Update(ctx context.Context, deposit entity.Deposit) error {
 	return r.db.With(ctx).Model(&deposit).Update()
 }

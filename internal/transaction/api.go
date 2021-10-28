@@ -12,28 +12,14 @@ import (
 func RegisterHandlers(r *routing.RouteGroup, service Service, logger log.Logger) {
 	res := resource{service, logger}
 
-	r.Post("/deposits/transfer", res.createTwoway)
 	r.Post("/deposits/change", res.createOneway)
+	r.Post("/deposits/transfer", res.createTwoway)
 	r.Post("/deposits/history", res.getForUser)
 }
 
 type resource struct {
 	service Service
 	logger  log.Logger
-}
-
-func (r resource) createTwoway(c *routing.Context) error {
-	var input CreateTwowayTransactionRequest
-	if err := c.Read(&input); err != nil {
-		r.logger.With(c.Request.Context()).Info(err)
-		return errors.BadRequest("")
-	}
-
-	transaction, err := r.service.CreateTwoway(c.Request.Context(), input)
-	if err != nil {
-		return err
-	}
-	return c.WriteWithStatus(transaction, http.StatusCreated)
 }
 
 func (r resource) createOneway(c *routing.Context) error {
@@ -45,6 +31,20 @@ func (r resource) createOneway(c *routing.Context) error {
 
 	transaction, err := r.service.CreateOneway(c.Request.Context(), input)
 	if err != nil{
+		return err
+	}
+	return c.WriteWithStatus(transaction, http.StatusCreated)
+}
+
+func (r resource) createTwoway(c *routing.Context) error {
+	var input CreateTwowayTransactionRequest
+	if err := c.Read(&input); err != nil {
+		r.logger.With(c.Request.Context()).Info(err)
+		return errors.BadRequest("")
+	}
+
+	transaction, err := r.service.CreateTwoway(c.Request.Context(), input)
+	if err != nil {
 		return err
 	}
 	return c.WriteWithStatus(transaction, http.StatusCreated)
