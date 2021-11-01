@@ -5,11 +5,13 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
+// Request represents a JSON data of an API request.
 type Request interface {
+	// Validate validates the request's fields.
 	Validate() error
 }
 
-// GetBalanceRequest represents a request to getBalance balance of specific user.
+// GetBalanceRequest represents a request to get balance of specific user.
 type GetBalanceRequest struct {
 	OwnerId string `json:"owner_id"`
 }
@@ -21,7 +23,7 @@ func (r GetBalanceRequest) Validate() error {
 	)
 }
 
-// UpdateBalanceRequest represents a request to updateBalance user's balance.
+// UpdateBalanceRequest represents a request to update user's balance.
 type UpdateBalanceRequest struct {
 	OwnerId     string `json:"owner_id"`
 	Amount      int64  `json:"amount"`

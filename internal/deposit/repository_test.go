@@ -26,7 +26,7 @@ func TestRepository(t *testing.T) {
 	count, err := repo.Count(ctx)
 	assert.Nil(t, err)
 
-	// create
+	// create deposit
 	err = repo.Create(ctx, dep)
 	assert.Nil(t, err)
 	count2, _ := repo.Count(ctx)
