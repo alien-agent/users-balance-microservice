@@ -82,8 +82,8 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 	rg := router.Group("/v1")
 
 	transactionRepo, depositRepo := transaction.NewRepository(db, logger), deposit.NewRepository(db, logger)
-	deposit.RegisterHandlers(rg.Group(""), deposit.NewService(depositRepo, logger), logger)
-	transaction.RegisterHandlers(rg.Group(""), transaction.NewService(transactionRepo, depositRepo, logger), logger)
+	deposit.RegisterHandlers(rg.Group(""), deposit.NewService(depositRepo, transactionRepo, logger), logger)
+	//transaction.RegisterHandlers(rg.Group(""), transaction.NewService(transactionRepo, depositRepo, logger), logger)
 
 	return router
 }

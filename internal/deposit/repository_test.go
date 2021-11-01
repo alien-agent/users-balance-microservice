@@ -32,21 +32,21 @@ func TestRepository(t *testing.T) {
 	count2, _ := repo.Count(ctx)
 	assert.Equal(t, 1, count2-count)
 
-	// get
+	// get balance
 	dep, err = repo.Get(ctx, ownerId)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1000), dep.Balance)
-	/*_, err = repo.Get(ctx, uuid.MustParse("11f58ca1-8fee-453a-8bf0-544b4bcde3f2"))
+	/*_, err = depositRepo.Get(ctx, uuid.MustParse("11f58ca1-8fee-453a-8bf0-544b4bcde3f2"))
 	assert.Equal(t, sql.ErrNoRows, err)*/
 
-	// update
+	// update balance
 	dep.Balance -= 600
 	err = repo.Update(ctx, dep)
 	assert.Nil(t, err)
 	dep, _ = repo.Get(ctx, ownerId)
 	assert.Equal(t, int64(400), dep.Balance)
 
-	// update a deposit with negative balance -> get an error, update rejected
+	// push an update with negative balance -> get an error, update rejected
 	dep.Balance -= 20000
 	err = repo.Update(ctx, dep)
 	assert.NotNil(t, err)

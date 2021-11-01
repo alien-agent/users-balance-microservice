@@ -13,9 +13,8 @@ import (
 // Repository encapsulates the logic to access transactions from the database.
 type Repository interface {
 	// Create saves a new Transaction in the storage.
-	Create(ctx context.Context, transaction entity.Transaction) error
-	// GetById returns the Transaction with the given id.
-	GetById(ctx context.Context, id string) (entity.Transaction, error)
+	// Transaction tx is assigned an id from database in case of successful transaction.
+	Create(ctx context.Context, tx *entity.Transaction) error
 	// GetForUser returns a list of all transactions related to given userId.
 	GetForUser(ctx context.Context, ownerId uuid.UUID, order string, offset, limit int) ([]entity.Transaction, error)
 }
@@ -32,22 +31,10 @@ func NewRepository(db *dbcontext.DB, logger log.Logger) Repository {
 }
 
 // Create saves a new Transaction record in the database.
-func (r repository) Create(ctx context.Context, transaction entity.Transaction) error {
-	return r.db.With(ctx).Model(&transaction).Insert()
+// Transaction tx is assigned an id from database in case of successful transaction.
+func (r repository) Create(ctx context.Context, tx *entity.Transaction) error {
+	return r.db.With(ctx).Model(tx).Insert()
 }
-
-func (r repository) GetById(ctx context.Context, id string) (entity.Transaction, error) {
-	var transaction entity.Transaction
-	err := r.db.With(ctx).Select().Model(id, &transaction)
-	return transaction, err
-}
-
-/*
-Сделать в deposit/api получение баланса пользователя и создание нового счета. (по адресу /v1/deposits/<owner_id>)
-Сделать пополнение/снятие счета по адресу /v1/deposits/change, но обрабатывать в transactions (создавая новую транзакцию)
-Сделать перевод между пользователями через transactions.
-
- */
 
 // GetForUser returns all transactions from and to the user(Transaction) with given id.
 func (r repository) GetForUser(ctx context.Context, ownerId uuid.UUID, order string, offset, limit int) ([]entity.Transaction, error) {
@@ -60,7 +47,7 @@ func (r repository) GetForUser(ctx context.Context, ownerId uuid.UUID, order str
 	if limit > 0 {
 		query.Limit(int64(limit))
 	}
-	if order != ""{
+	if order != "" {
 		query.OrderBy(order)
 	}
 
