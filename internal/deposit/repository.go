@@ -2,7 +2,6 @@ package deposit
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 	"users-balance-microservice/internal/entity"
@@ -19,7 +18,7 @@ type Repository interface {
 	// Update updates the given Deposit to db.
 	Update(ctx context.Context, deposit entity.Deposit) error
 	// Count returns the number of Deposit records in the database.
-	Count(ctx context.Context) (int, error)
+	Count(ctx context.Context) (int64, error)
 }
 
 // repository persists Deposit in database
@@ -38,18 +37,6 @@ func NewRepository(db *dbcontext.DB, logger log.Logger) Repository {
 func (r repository) Get(ctx context.Context, ownerId uuid.UUID) (entity.Deposit, error) {
 	var deposit entity.Deposit
 	err := r.db.With(ctx).Select().Model(ownerId, &deposit)
-
-	// Create if does not exist
-	if err == sql.ErrNoRows {
-		err = r.Create(ctx, entity.Deposit{
-			OwnerId: ownerId,
-			Balance: 0,
-		})
-		if err == nil {
-			deposit, err = r.Get(ctx, ownerId)
-		}
-	}
-
 	return deposit, err
 }
 
@@ -64,8 +51,8 @@ func (r repository) Update(ctx context.Context, deposit entity.Deposit) error {
 }
 
 // Count returns the number of Deposit records in the database.
-func (r repository) Count(ctx context.Context) (int, error) {
-	var count int
+func (r repository) Count(ctx context.Context) (int64, error) {
+	var count int64
 	err := r.db.With(ctx).Select("COUNT(*)").From("deposit").Row(&count)
 	return count, err
 }

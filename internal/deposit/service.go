@@ -2,6 +2,7 @@ package deposit
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,7 +19,7 @@ type Service interface {
 	Update(ctx context.Context, req UpdateBalanceRequest) (Transaction, error)
 	Transfer(ctx context.Context, req TransferRequest) (Transaction, error)
 	GetHistory(ctx context.Context, req GetHistoryRequest) ([]entity.Transaction, error)
-	Count(ctx context.Context) (int, error)
+	Count(ctx context.Context) (int64, error)
 }
 
 // Deposit represents the data about a deposit.
@@ -45,7 +46,15 @@ func NewService(depositRepo Repository, transactionRepo transaction.Repository, 
 
 func (s service) modifyBalance(ctx context.Context, ownerId uuid.UUID, amount int64) error {
 	dep, err := s.depositRepo.Get(ctx, ownerId)
-	if err != nil {
+
+	// If deposit is not in DB yet, create it
+	if err == sql.ErrNoRows && amount > 0 {
+		dep = entity.Deposit{OwnerId: ownerId}
+		err = s.depositRepo.Create(ctx, dep)
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
 		return err
 	}
 
@@ -64,7 +73,9 @@ func (s service) GetBalance(ctx context.Context, req GetBalanceRequest) (float32
 	}
 
 	deposit, err := s.depositRepo.Get(ctx, uuid.MustParse(req.OwnerId))
-	if err != nil {
+	if err == sql.ErrNoRows {
+		return 0, nil
+	} else if err != nil {
 		return 0, err
 	}
 	balance := float32(deposit.Balance)
@@ -78,19 +89,6 @@ func (s service) GetBalance(ctx context.Context, req GetBalanceRequest) (float32
 	}
 
 	return balance, nil
-}
-
-// Create creates a new Deposit.
-func (s service) Create(ctx context.Context, ownerId uuid.UUID) (Deposit, error) {
-	newDeposit := entity.Deposit{
-		OwnerId: ownerId,
-		Balance: 0,
-	}
-	err := s.depositRepo.Create(ctx, newDeposit)
-	if err != nil {
-		return Deposit{}, err
-	}
-	return Deposit{newDeposit}, nil
 }
 
 // Update changes the balance of Deposit according to UpdateBalanceRequest.
@@ -135,6 +133,7 @@ func (s service) Transfer(ctx context.Context, req TransferRequest) (Transaction
 
 	// req.SenderId and req.RecipientId are indeed valid UUIDs (checked by req.Validate())
 	senderUUID, recipientUUID := uuid.MustParse(req.SenderId), uuid.MustParse(req.RecipientId)
+
 	if err := s.modifyBalance(ctx, senderUUID, -req.Amount); err != nil {
 		return Transaction{}, err
 	}
@@ -176,6 +175,6 @@ func (s service) GetHistory(ctx context.Context, req GetHistoryRequest) ([]entit
 
 // Count returns a number of Deposits in the database.
 // Mainly used for testing purposes.
-func (s service) Count(ctx context.Context) (int, error) {
+func (s service) Count(ctx context.Context) (int64, error) {
 	return s.depositRepo.Count(ctx)
 }
