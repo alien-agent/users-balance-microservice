@@ -22,17 +22,27 @@ func TestRepository(t *testing.T) {
 
 	id1, id2 := uuid.New(), uuid.New()
 
+	// initial count
+	count, err := repo.Count(ctx)
+	assert.Nil(t, err)
+
 	// create (deposit withdrawal)
 	tx := entity.Transaction{
 		Id:              0,
 		SenderId:        id1,
 		RecipientId:     uuid.Nil,
-		Amount:          500,
+		Amount:          300,
 		Description:     "Monthly subscription",
 		TransactionDate: time.Now(),
 	}
-	err := repo.Create(ctx, &tx)
-	assert.Nil(t, err)
+	err = repo.Create(ctx, &tx)
+	if assert.NoError(t, err) {
+		count2, err := repo.Count(ctx)
+		if assert.NoError(t, err) {
+			assert.Equal(t, int64(1), count2-count) // new transaction is really in db
+			count++
+		}
+	}
 
 	// create (deposit top-up)
 	tx = entity.Transaction{
@@ -44,10 +54,17 @@ func TestRepository(t *testing.T) {
 		TransactionDate: time.Now(),
 	}
 	err = repo.Create(ctx, &tx)
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, tx.Id) // tx.Id should be auto-incremented by database
+	if assert.NoError(t, err) {
+		assert.NotZero(t, tx.Id) // tx.Id should be auto-incremented by db.
 
-	// create (money-transfer)
+		count2, err := repo.Count(ctx)
+		if assert.NoError(t, err) {
+			assert.Equal(t, int64(1), count2-count) // new transaction is really in db
+			count++
+		}
+	}
+
+	// create (money transfer)
 	tx = entity.Transaction{
 		Id:              0,
 		SenderId:        id1,
@@ -57,8 +74,15 @@ func TestRepository(t *testing.T) {
 		TransactionDate: time.Now(),
 	}
 	err = repo.Create(ctx, &tx)
-	assert.Nil(t, err)
-	assert.NotEqual(t, 0, tx.Id) // tx.Id should be auto-incremented by database
+	if assert.NoError(t, err) {
+		assert.NotZero(t, tx.Id)
+
+		count2, err := repo.Count(ctx)
+		if assert.NoError(t, err) {
+			assert.Equal(t, int64(1), count2-count) // new transaction is really in db
+			count++
+		}
+	}
 
 	// create with negative amount -> db error
 	err = repo.Create(ctx, &entity.Transaction{
@@ -69,5 +93,22 @@ func TestRepository(t *testing.T) {
 		Description:     "happy birthday!",
 		TransactionDate: time.Now(),
 	})
-	assert.NotNil(t, err)
+	if assert.Error(t, err) {
+		count2, err := repo.Count(ctx)
+		if assert.NoError(t, err) {
+			assert.Equal(t, int64(0), count2-count) // invalid transaction is NOT in db
+		}
+	}
+
+	// list for user
+	txs, err := repo.GetForUser(ctx, id1, "", 0, 0)
+	if assert.NoError(t, err) {
+		assert.Len(t, txs, 3)
+	}
+
+	// list for user with pagination
+	txs, err = repo.GetForUser(ctx, id1, "", 1, 1)
+	if assert.NoError(t, err) {
+		assert.Len(t, txs, 1)
+	}
 }
