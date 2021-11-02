@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	errCRUD = errors.New("error crud")
+	databaseError = errors.New("database error")
 
 	logger, _       = log.NewForTest()
 	exchangeService = mockExchangeRatesService{}
@@ -213,7 +213,7 @@ func (m *mockDepositRepository) Get(ctx context.Context, ownerId uuid.UUID) (ent
 
 func (m *mockDepositRepository) Create(ctx context.Context, deposit entity.Deposit) error {
 	if deposit.Balance < 0 {
-		return errCRUD
+		return databaseError
 	}
 	m.items = append(m.items, deposit)
 	return nil
@@ -221,7 +221,7 @@ func (m *mockDepositRepository) Create(ctx context.Context, deposit entity.Depos
 
 func (m *mockDepositRepository) Update(ctx context.Context, deposit entity.Deposit) error {
 	if deposit.Balance < 0 {
-		return errCRUD
+		return databaseError
 	}
 
 	for i, item := range m.items {
@@ -245,7 +245,7 @@ type mockTransactionRepository struct {
 
 func (m *mockTransactionRepository) Create(ctx context.Context, tx *entity.Transaction) error {
 	if tx.Amount < 0 {
-		return errCRUD
+		return databaseError
 	}
 	tx.Id = m.lastInsertedId
 	m.lastInsertedId++
