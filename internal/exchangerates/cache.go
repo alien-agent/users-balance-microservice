@@ -4,7 +4,7 @@ import (
 	"github.com/patrickmn/go-cache"
 )
 
-// CacheService handles in-memory caching of exchangerates rates.
+// CacheService handles in-memory caching of exchange rates.
 type CacheService struct {
 	store *cache.Cache
 }
@@ -22,7 +22,7 @@ func (s *CacheService) Get(code string) (float32, bool) {
 	return 0, false
 }
 
-// Store unpacks currencies and corresponding rates from RatesResponse and saves them to cache
+// Store unpacks currencies and corresponding rates from RatesResponse and saves them to cache.
 func (s *CacheService) Store(rsp *RatesResponse) {
 	for code, rate := range rsp.Rates {
 		s.store.Set(code, rate, cache.DefaultExpiration)

@@ -12,14 +12,19 @@ import (
 )
 
 const (
-	baseCurrencyCode = "RUB"
-	apiPath          = "https://api.exchangerate.host/latest"
+	baseCurrency = "RUB"
+	apiPath      = "https://api.exchangerate.host/latest"
 )
 
 var currencyUnavailableError = errors.New("currency is not present in either cache or API response")
 
-// RatesService handles rate request/responses.
-type RatesService struct {
+// RatesService handles exchange rates.
+type RatesService interface {
+	// Get returns the exchange ratio for specific currency code against baseCurrency(RUB).
+	Get(code string) (float32, error)
+}
+
+type service struct {
 	cache  *CacheService
 	logger log.Logger
 }
@@ -28,7 +33,7 @@ type RatesService struct {
 func NewRatesService(expiry time.Duration, logger log.Logger) RatesService {
 	store := cache.New(expiry, 5*time.Minute)
 	cacheService := NewCacheService(store)
-	return RatesService{cache: cacheService, logger: logger}
+	return service{cache: cacheService, logger: logger}
 }
 
 // RatesResponse holds an API response with a list of RUB\CURRENCY ratios for all currencies.
@@ -37,8 +42,8 @@ type RatesResponse struct {
 }
 
 // Get will fetch a single rate for a given currency either from the cache or the API.
-func (s *RatesService) Get(code string) (float32, error) {
-	if code == baseCurrencyCode {
+func (s service) Get(code string) (float32, error) {
+	if code == baseCurrency {
 		return 1, nil
 	}
 
@@ -63,8 +68,8 @@ func (s *RatesService) Get(code string) (float32, error) {
 }
 
 // Fetch all RUB/CURRENCY rates from API.
-func (s *RatesService) fetch() error {
-	fullUrl := fmt.Sprintf("%s?base=%s", apiPath, baseCurrencyCode)
+func (s service) fetch() error {
+	fullUrl := fmt.Sprintf("%s?base=%s", apiPath, baseCurrency)
 	response, err := http.Get(fullUrl)
 	if err != nil {
 		return err
