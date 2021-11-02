@@ -7,5 +7,5 @@ type Deposit struct {
 	// OwnerId is a UUID of the user which this Deposit belongs to. Serves as primary key in the database.
 	OwnerId uuid.UUID `json:"owner_id" db:"pk"`
 	// Balance is an amount of money which is available to this user. Non-negative.
-	Balance int64     `json:"balance"`
+	Balance int64 `json:"balance"`
 }
