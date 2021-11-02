@@ -24,10 +24,13 @@ func testValidation(t *testing.T, tests []validationTestcase) {
 }
 
 func TestGetBalanceRequest_Validate(t *testing.T) {
+	id1 := uuid.NewString()
 	testValidation(t, []validationTestcase{
-		{"success", GetBalanceRequest{uuid.NewString()}, false},
-		{"missing OwnerId", GetBalanceRequest{""}, true},
-		{"invalid OwnerId", GetBalanceRequest{"12712912"}, true},
+		{"success", GetBalanceRequest{OwnerId: id1}, false},
+		{"success with currency", GetBalanceRequest{OwnerId: id1, Currency: "EUR"}, false},
+		{"missing OwnerId", GetBalanceRequest{OwnerId: ""}, true},
+		{"invalid OwnerId", GetBalanceRequest{OwnerId: "12712912"}, true},
+		{"fail invalid currency", GetBalanceRequest{OwnerId: id1, Currency: "EURUSDPLT"}, true},
 	})
 }
 
@@ -63,11 +66,15 @@ func TestGetHistoryRequest_Validate(t *testing.T) {
 		{"success only OwnerId", GetHistoryRequest{OwnerId: id1}, false},
 		{"success with ordering", GetHistoryRequest{OwnerId: id1, OrderBy: "amount", OrderDirection: "ASC"}, false},
 		{"success with limit&offset", GetHistoryRequest{OwnerId: id1, Offset: 10, Limit: 5}, false},
-		{"success all params", GetHistoryRequest{id1, 10, 5,"transaction_date", "DESC"}, false},
+		{"success all params", GetHistoryRequest{id1, 10, 5, "transaction_date", "DESC"}, false},
 		{"fail missing OwnerId", GetHistoryRequest{OwnerId: ""}, true},
 		{"fail invalid OwnerId", GetHistoryRequest{OwnerId: "128312-1241-12"}, true},
 		{"fail invalid OrderBy", GetHistoryRequest{OwnerId: id1, OrderBy: "owner_id"}, true},
-		{"fail invalid OrderDirection", GetHistoryRequest{OwnerId: id1, OrderBy: "amount", OrderDirection: "MEDIAN"}, true},
+		{
+			"fail invalid OrderDirection",
+			GetHistoryRequest{OwnerId: id1, OrderBy: "amount", OrderDirection: "MEDIAN"},
+			true,
+		},
 		{"fail negative offset", GetHistoryRequest{OwnerId: id1, Offset: -10}, true},
 		{"fail negative limit", GetHistoryRequest{OwnerId: id1, Limit: -5}, true},
 	})

@@ -36,7 +36,7 @@ func TestRepository(t *testing.T) {
 	dep, err = repo.Get(ctx, ownerId)
 	assert.Nil(t, err)
 	assert.Equal(t, int64(1000), dep.Balance)
-	/*_, err = depositRepo.Get(ctx, uuid.MustParse("11f58ca1-8fee-453a-8bf0-544b4bcde3f2"))
+	/*_, err = depositRepo.GetBalance(ctx, uuid.MustParse("11f58ca1-8fee-453a-8bf0-544b4bcde3f2"))
 	assert.Equal(t, sql.ErrNoRows, err)*/
 
 	// update balance

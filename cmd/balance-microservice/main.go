@@ -16,6 +16,7 @@ import (
 	"users-balance-microservice/internal/config"
 	"users-balance-microservice/internal/deposit"
 	"users-balance-microservice/internal/errors"
+	"users-balance-microservice/internal/exchangerates"
 	"users-balance-microservice/internal/transaction"
 	"users-balance-microservice/pkg/dbcontext"
 	"users-balance-microservice/pkg/log"
@@ -81,9 +82,13 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	rg := router.Group("/v1")
 
-	transactionRepo, depositRepo := transaction.NewRepository(db, logger), deposit.NewRepository(db, logger)
-	deposit.RegisterHandlers(rg.Group(""), deposit.NewService(depositRepo, transactionRepo, logger), logger)
-	//transaction.RegisterHandlers(rg.Group(""), transaction.NewService(transactionRepo, depositRepo, logger), logger)
+	deposit.RegisterHandlers(rg.Group(""), deposit.NewService(
+		deposit.NewRepository(db, logger),
+		transaction.NewRepository(db, logger),
+		exchangerates.NewRatesService(10*time.Minute, logger),
+		logger), logger,
+	)
+	// transaction.RegisterHandlers(rg.Group(""), transaction.NewService(transactionRepo, depositRepo, logger), logger)
 
 	return router
 }

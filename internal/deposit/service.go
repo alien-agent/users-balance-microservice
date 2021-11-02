@@ -7,13 +7,14 @@ import (
 	"github.com/google/uuid"
 	"users-balance-microservice/internal/entity"
 	"users-balance-microservice/internal/errors"
+	"users-balance-microservice/internal/exchangerates"
 	"users-balance-microservice/internal/transaction"
 	"users-balance-microservice/pkg/log"
 )
 
 // Service encapsulates usecase logic for deposits.
 type Service interface {
-	Get(ctx context.Context, req GetBalanceRequest) (Deposit, error)
+	GetBalance(ctx context.Context, req GetBalanceRequest) (float32, error)
 	Update(ctx context.Context, req UpdateBalanceRequest) (Transaction, error)
 	Transfer(ctx context.Context, req TransferRequest) (Transaction, error)
 	GetHistory(ctx context.Context, req GetHistoryRequest) ([]entity.Transaction, error)
@@ -33,12 +34,13 @@ type Transaction struct {
 type service struct {
 	depositRepo     Repository
 	transactionRepo transaction.Repository
+	exchangeService exchangerates.RatesService
 	logger          log.Logger
 }
 
 // NewService creates a new album service.
-func NewService(depositRepo Repository, transactionRepo transaction.Repository, logger log.Logger) Service {
-	return service{depositRepo, transactionRepo, logger}
+func NewService(depositRepo Repository, transactionRepo transaction.Repository, exchangeService exchangerates.RatesService, logger log.Logger) Service {
+	return service{depositRepo, transactionRepo, exchangeService, logger}
 }
 
 func (s service) modifyBalance(ctx context.Context, ownerId uuid.UUID, amount int64) error {
@@ -55,16 +57,27 @@ func (s service) modifyBalance(ctx context.Context, ownerId uuid.UUID, amount in
 	return s.depositRepo.Update(ctx, dep)
 }
 
-// Get returns the Deposit whose owner whose OwnerId is equal to GetBalanceRequest.OwnerId.
-func (s service) Get(ctx context.Context, req GetBalanceRequest) (Deposit, error) {
+// GetBalance returns the balance of the Deposit whose owner whose OwnerId is equal to GetBalanceRequest.OwnerId.
+func (s service) GetBalance(ctx context.Context, req GetBalanceRequest) (float32, error) {
 	if err := req.Validate(); err != nil {
-		return Deposit{}, err
+		return 0, err
 	}
+
 	deposit, err := s.depositRepo.Get(ctx, uuid.MustParse(req.OwnerId))
 	if err != nil {
-		return Deposit{}, err
+		return 0, err
 	}
-	return Deposit{deposit}, nil
+	balance := float32(deposit.Balance)
+
+	if req.Currency != "" {
+		rate, err := s.exchangeService.Get(req.Currency)
+		if err != nil {
+			return 0, errors.InternalServerError("Requested currency is not available at the moment.")
+		}
+		return balance * rate, nil
+	}
+
+	return balance, nil
 }
 
 // Create creates a new Deposit.

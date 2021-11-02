@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"users-balance-microservice/internal/entity"
+	"users-balance-microservice/internal/exchangerates"
 	"users-balance-microservice/pkg/log"
 )
 
@@ -15,7 +17,8 @@ var errCRUD = errors.New("error crud")
 
 func Test_service_CRUD(t *testing.T) {
 	logger, _ := log.NewForTest()
-	s := NewService(&mockDepositRepository{}, &mockTransactionRepository{}, logger)
+	exchangeService := exchangerates.NewRatesService(5*time.Minute, logger)
+	s := NewService(&mockDepositRepository{}, &mockTransactionRepository{}, exchangeService, logger)
 
 	ctx := context.Background()
 
@@ -24,26 +27,40 @@ func Test_service_CRUD(t *testing.T) {
 	assert.Equal(t, 0, count)
 
 	// getBalance non-existing deposit -> new deposit created with balance=0
-	ownerId := uuid.New()
-	deposit, err := s.Get(ctx, GetBalanceRequest{OwnerId: ownerId.String()})
+	id1 := uuid.NewString()
+	balance, err := s.GetBalance(ctx, GetBalanceRequest{OwnerId: id1})
 	assert.Nil(t, err)
-	assert.Equal(t, ownerId, deposit.OwnerId)
-	assert.Equal(t, int64(0), deposit.Balance)
+	assert.Equal(t, float32(0), balance)
 	count, _ = s.Count(ctx)
 	assert.Equal(t, 1, count)
 
-	// validation error in getBalance
-	_, err = s.Get(ctx, GetBalanceRequest{OwnerId: "it is invalid UUID"})
+	// getBalance invalid UUID -> no new deposit is created, error returned
+	_, err = s.GetBalance(ctx, GetBalanceRequest{OwnerId: "it is invalid UUID"})
 	assert.NotNil(t, err)
 	count, _ = s.Count(ctx)
 	assert.Equal(t, 1, count)
 
-	// getBalance existing deposit -> its balance is returned
-	deposit, err = s.Get(ctx, GetBalanceRequest{OwnerId: ownerId.String()})
+	// update existing deposit - success
+	_, err = s.Update(ctx, UpdateBalanceRequest{id1, 500, ""})
 	assert.Nil(t, err)
-	assert.Equal(t, int64(0), deposit.Balance)
-	count, _ = s.Count(ctx)
-	assert.Equal(t, 1, count)
+	balance, err = s.GetBalance(ctx, GetBalanceRequest{OwnerId: id1})
+	assert.Nil(t, err)
+	assert.Equal(t, float32(500), balance)
+
+	// update non-existing deposit - new deposit is created and its balance is updated
+	id2 := uuid.NewString()
+	_, err = s.Update(ctx, UpdateBalanceRequest{id2, 1200, ""})
+	assert.Nil(t, err)
+	balance, err = s.GetBalance(ctx, GetBalanceRequest{OwnerId: id2})
+	assert.Nil(t, err)
+	assert.Equal(t, float32(1200), balance)
+
+	// update deposit, withdrawal amount more than balance -> error, balance is not modified
+	_, err = s.Update(ctx, UpdateBalanceRequest{id1, -2500, ""})
+	assert.NotNil(t, err)
+	balance, err = s.GetBalance(ctx, GetBalanceRequest{OwnerId: id1})
+	assert.Nil(t, err)
+	assert.Equal(t, float32(500), balance)
 }
 
 type mockDepositRepository struct {
@@ -89,7 +106,7 @@ func (m *mockDepositRepository) Count(ctx context.Context) (int, error) {
 }
 
 type mockTransactionRepository struct {
-	items []entity.Transaction
+	items          []entity.Transaction
 	lastInsertedId int64
 }
 

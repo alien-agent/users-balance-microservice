@@ -28,12 +28,12 @@ func (r resource) getBalance(c *routing.Context) error {
 		return errors.BadRequest("")
 	}
 
-	deposit, err := r.service.Get(c.Request.Context(), input)
+	balance, err := r.service.GetBalance(c.Request.Context(), input)
 	if err != nil {
 		return err
 	}
 
-	return c.Write(deposit.Balance)
+	return c.Write(balance)
 }
 
 func (r resource) updateBalance(c *routing.Context) error {
@@ -66,13 +66,13 @@ func (r resource) transfer(c *routing.Context) error {
 
 func (r resource) history(c *routing.Context) error {
 	var input GetHistoryRequest
-	if err := c.Read(&input); err != nil{
+	if err := c.Read(&input); err != nil {
 		r.logger.With(c.Request.Context()).Info(err)
 		return errors.BadRequest("")
 	}
 
 	transactions, err := r.service.GetHistory(c.Request.Context(), input)
-	if err != nil{
+	if err != nil {
 		return err
 	}
 	return c.Write(transactions)
