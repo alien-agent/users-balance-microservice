@@ -42,10 +42,10 @@ func TestService_GetBalance(t *testing.T) {
 		assert.EqualValues(t, 1000, balance)
 	}
 
-	// get existing deposit's balance in USD (fake exchange rate RUB/USD=2 is used)
+	// get existing deposit's balance in USD (fake exchange rate RUB/USD=0.1 is used)
 	balance, err = s.GetBalance(ctx, GetBalanceRequest{OwnerId: id1.String(), Currency: "USD"})
 	if assert.NoError(t, err) {
-		assert.EqualValues(t, 2000, balance)
+		assert.EqualValues(t, 100, balance)
 	}
 
 	// get non-existing deposit's balance - 0 is returned regardless of currency, new deposit is not created.
@@ -101,15 +101,6 @@ func TestService_Update(t *testing.T) {
 		}
 	}
 
-	// update balance withdrawal insufficient balance -> failure
-	_, err = s.Update(ctx, UpdateBalanceRequest{id1.String(), -250000, "hacker attack"})
-	if assert.Error(t, err) {
-		balance, err := s.GetBalance(ctx, GetBalanceRequest{OwnerId: id1.String()})
-		if assert.NoError(t, err) {
-			assert.EqualValues(t, 1000, balance)
-		}
-	}
-
 	// update balance top-up non-existing deposit -> new deposit is created
 	tx, err = s.Update(ctx, UpdateBalanceRequest{id2.String(), 2000, "mastercard top-up"})
 	if assert.NoError(t, err) {
@@ -128,6 +119,23 @@ func TestService_Update(t *testing.T) {
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, 2000, balance)
 		}
+	}
+
+	// update balance withdrawal insufficient balance -> failure
+	_, err = s.Update(ctx, UpdateBalanceRequest{id1.String(), -250000, "hacker attack"})
+	if assert.Error(t, err) {
+		balance, err := s.GetBalance(ctx, GetBalanceRequest{OwnerId: id1.String()})
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, 1000, balance)
+		}
+	}
+
+	// update balance invalid owner_id -> failure
+	count, _ = s.Count(ctx)
+	_, err = s.Update(ctx, UpdateBalanceRequest{"123-456-789", 2000, ""})
+	if assert.Error(t, err) {
+		count2, _ := s.Count(ctx)
+		assert.EqualValues(t, 0, count2-count)
 	}
 }
 
@@ -162,22 +170,7 @@ func TestService_Transfer(t *testing.T) {
 		}
 	}
 
-	// transfer insufficient funds failure
-	_, err = s.Transfer(ctx, TransferRequest{id2.String(), id1.String(), 300000, "thanks for dinner!"})
-	if assert.Error(t, err) {
-		balance, err := s.GetBalance(ctx, GetBalanceRequest{OwnerId: id1.String()})
-		if assert.NoError(t, err) {
-			assert.EqualValues(t, 1300, balance)
-		}
-
-		balance, err = s.GetBalance(ctx, GetBalanceRequest{OwnerId: id2.String()})
-		if assert.NoError(t, err) {
-			assert.EqualValues(t, 1700, balance)
-		}
-	}
-
 	// transfer from existing to non-existing deposit success
-	// transfer success
 	tx, err = s.Transfer(ctx, TransferRequest{id2.String(), id3.String(), 700, "happy birthday!"})
 	if assert.NoError(t, err) {
 		// verify transaction
@@ -194,6 +187,34 @@ func TestService_Transfer(t *testing.T) {
 		balance, err = s.GetBalance(ctx, GetBalanceRequest{OwnerId: id3.String()})
 		if assert.NoError(t, err) {
 			assert.EqualValues(t, 700, balance)
+		}
+	}
+
+	// transfer insufficient funds failure
+	_, err = s.Transfer(ctx, TransferRequest{id2.String(), id1.String(), 300000, "thanks for dinner!"})
+	if assert.Error(t, err) {
+		balance, err := s.GetBalance(ctx, GetBalanceRequest{OwnerId: id1.String()})
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, 1300, balance)
+		}
+
+		balance, err = s.GetBalance(ctx, GetBalanceRequest{OwnerId: id2.String()})
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, 1000, balance)
+		}
+	}
+
+	// transfer negative amount failure
+	_, err = s.Transfer(ctx, TransferRequest{id2.String(), id1.String(), -300, "hack1r attack"})
+	if assert.Error(t, err) {
+		balance, err := s.GetBalance(ctx, GetBalanceRequest{OwnerId: id1.String()})
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, 1300, balance)
+		}
+
+		balance, err = s.GetBalance(ctx, GetBalanceRequest{OwnerId: id2.String()})
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, 1000, balance)
 		}
 	}
 }
@@ -270,9 +291,9 @@ func (m *mockTransactionRepository) Count(ctx context.Context) (int64, error) {
 	return int64(len(m.items)), nil
 }
 
-// Fake exchange rates service provides exchange ratio=2 regardless of currency code.
+// Fake exchange rates service provides exchange ratio=0.1 regardless of currency code.
 type mockExchangeRatesService struct{}
 
 func (s mockExchangeRatesService) Get(code string) (float32, error) {
-	return 2, nil
+	return 0.1, nil
 }
