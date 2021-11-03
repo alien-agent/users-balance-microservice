@@ -15,7 +15,7 @@ type Repository interface {
 	Get(ctx context.Context, ownerId uuid.UUID) (entity.Deposit, error)
 	// Create saves a new Deposit in the storage.
 	Create(ctx context.Context, deposit entity.Deposit) error
-	// Update updates the given Deposit to db.
+	// Update updates the changes to the given Deposit to db.
 	Update(ctx context.Context, deposit entity.Deposit) error
 	// Count returns the number of Deposit records in the database.
 	Count(ctx context.Context) (int64, error)
@@ -27,7 +27,7 @@ type repository struct {
 	logger log.Logger
 }
 
-// NewRepository creates a new album repository
+// NewRepository creates a new Deposit repository
 func NewRepository(db *dbcontext.DB, logger log.Logger) Repository {
 	return repository{db, logger}
 }

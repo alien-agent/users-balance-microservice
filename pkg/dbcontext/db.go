@@ -35,7 +35,7 @@ func (db *DB) DB() *dbx.DB {
 
 // With returns a Builder that can be used to build and execute SQL queries.
 // With will return the transaction if it is found in the given context.
-// Otherwise it will return a DB connection associated with the context.
+// Otherwise, it will return a DB connection associated with the context.
 func (db *DB) With(ctx context.Context) dbx.Builder {
 	if tx, ok := ctx.Value(txKey).(*dbx.Tx); ok {
 		return tx

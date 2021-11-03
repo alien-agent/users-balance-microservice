@@ -29,8 +29,8 @@ type service struct {
 	logger log.Logger
 }
 
-// NewRatesService creates a new handler for this service.
-func NewRatesService(expiry time.Duration, logger log.Logger) RatesService {
+// NewService creates a new exchange rates service.
+func NewService(expiry time.Duration, logger log.Logger) RatesService {
 	store := cache.New(expiry, 5*time.Minute)
 	cacheService := NewCacheService(store)
 	return service{cache: cacheService, logger: logger}

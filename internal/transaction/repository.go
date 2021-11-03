@@ -26,13 +26,13 @@ type repository struct {
 	logger log.Logger
 }
 
-// NewRepository creates a new album repository
+// NewRepository creates a new Transaction repository.
 func NewRepository(db *dbcontext.DB, logger log.Logger) Repository {
 	return repository{db, logger}
 }
 
 // Create saves a new Transaction record in the database.
-// Transaction tx is assigned an id from database in case of successful transaction.
+// Transaction is assigned an auto-incremented id from database.
 func (r repository) Create(ctx context.Context, tx *entity.Transaction) error {
 	return r.db.With(ctx).Model(tx).Insert()
 }
@@ -43,7 +43,7 @@ func (r repository) Count(ctx context.Context) (int64, error) {
 	return count, err
 }
 
-// GetForUser returns all transactions from and to the user(Transaction) with given id.
+// GetForUser returns all transactions from and to the user with given id.
 func (r repository) GetForUser(ctx context.Context, ownerId uuid.UUID, order string, offset, limit int) ([]entity.Transaction, error) {
 	var result []entity.Transaction
 	query := r.db.With(ctx).Select().Where(dbx.Or(dbx.HashExp{"sender_id": ownerId}, dbx.HashExp{"recipient_id": ownerId}))

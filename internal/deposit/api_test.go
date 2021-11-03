@@ -9,6 +9,7 @@ import (
 	"users-balance-microservice/internal/entity"
 	"users-balance-microservice/internal/exchangerates"
 	"users-balance-microservice/internal/test"
+	"users-balance-microservice/pkg/dbcontext"
 	"users-balance-microservice/pkg/log"
 )
 
@@ -28,8 +29,8 @@ func TestAPI(t *testing.T) {
 	transactionRepo := &mockTransactionRepository{
 		items: []entity.Transaction{},
 	}
-	exchangeService := exchangerates.NewRatesService(30*time.Minute, logger)
-	RegisterHandlers(router.Group(""), NewService(depositRepo, transactionRepo, exchangeService, logger), logger)
+	exchangeService := exchangerates.NewService(30*time.Minute, logger)
+	RegisterHandlers(router.Group(""), NewService(depositRepo, transactionRepo, exchangeService, logger), logger, dbcontext.New(nil))
 
 	tests := []test.APITestCase{
 		{"get balance existing", "POST", "/deposits/balance", `{"owner_id": "615f3e76-37d3-11ec-8d3d-0242ac130003"}`, http.StatusOK, `1000`},

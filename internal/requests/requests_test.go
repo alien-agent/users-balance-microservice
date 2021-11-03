@@ -1,4 +1,4 @@
-package deposit
+package requests
 
 import (
 	"strings"

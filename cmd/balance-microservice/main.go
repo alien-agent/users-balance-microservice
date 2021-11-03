@@ -78,17 +78,15 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 		cors.Handler(cors.AllowAll),
 	)
 
-	// healthcheck.RegisterHandlers(router, Version)
-
 	rg := router.Group("/v1")
 
-	deposit.RegisterHandlers(rg.Group(""), deposit.NewService(
-		deposit.NewRepository(db, logger),
-		transaction.NewRepository(db, logger),
-		exchangerates.NewRatesService(10*time.Minute, logger),
-		logger), logger,
+	deposit.RegisterHandlers(
+		rg.Group(""),
+		deposit.NewService(deposit.NewRepository(db, logger), exchangerates.NewService(10*time.Minute, logger), logger),
+		transaction.NewService(transaction.NewRepository(db, logger), logger),
+		logger,
+		db,
 	)
-	// transaction.RegisterHandlers(rg.Group(""), transaction.NewService(transactionRepo, depositRepo, logger), logger)
 
 	return router
 }
