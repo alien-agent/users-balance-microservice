@@ -65,6 +65,10 @@ func (s service) modifyBalance(ctx context.Context, ownerId uuid.UUID, amount in
 
 // GetBalance returns the balance of the Deposit whose owner whose OwnerId is equal to GetBalanceRequest.OwnerId.
 func (s service) GetBalance(ctx context.Context, req requests.GetBalanceRequest) (float32, error) {
+	if err := req.Validate(); err != nil {
+		return 0, err
+	}
+
 	deposit, err := s.repo.Get(ctx, uuid.MustParse(req.OwnerId))
 	if err == sql.ErrNoRows {
 		return 0, nil
@@ -88,6 +92,10 @@ func (s service) GetBalance(ctx context.Context, req requests.GetBalanceRequest)
 // This method also creates a Transaction record in the database.
 // It returns the Transaction which reflects the corresponding balance change in case of success.
 func (s service) Update(ctx context.Context, req requests.UpdateBalanceRequest) error {
+	if err := req.Validate(); err != nil {
+		return err
+	}
+
 	ownerUUID := uuid.MustParse(req.OwnerId)
 	if err := s.modifyBalance(ctx, ownerUUID, req.Amount); err != nil {
 		return err
@@ -99,11 +107,14 @@ func (s service) Update(ctx context.Context, req requests.UpdateBalanceRequest) 
 // Transfer sends money from one user to another according to TransferRequest.
 // It returns a Transaction which reflects the corresponding money transfer in case of success.
 func (s service) Transfer(ctx context.Context, req requests.TransferRequest) error {
+	if err := req.Validate(); err != nil {
+		return err
+	}
+
 	senderUUID, recipientUUID := uuid.MustParse(req.SenderId), uuid.MustParse(req.RecipientId)
 	if err := s.modifyBalance(ctx, senderUUID, -req.Amount); err != nil {
 		return err
 	}
-	return sql.ErrNoRows
 	if err := s.modifyBalance(ctx, recipientUUID, req.Amount); err != nil {
 		return err
 	}

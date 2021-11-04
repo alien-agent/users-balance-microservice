@@ -37,9 +37,6 @@ func (r resource) getBalance(c *routing.Context) error {
 		r.logger.With(c.Request.Context()).Info(err)
 		return errors.BadRequest("")
 	}
-	if err := input.Validate(); err != nil {
-		return err
-	}
 
 	balance, err := r.depositService.GetBalance(c.Request.Context(), input)
 	if err != nil {
@@ -53,9 +50,6 @@ func (r resource) updateBalance(c *routing.Context) error {
 	if err := c.Read(&input); err != nil {
 		r.logger.With(c.Request.Context()).Info(err)
 		return errors.BadRequest("")
-	}
-	if err := input.Validate(); err != nil {
-		return err
 	}
 
 	err := r.depositService.Update(c.Request.Context(), input)
@@ -75,9 +69,6 @@ func (r resource) transfer(c *routing.Context) error {
 		r.logger.With(c.Request.Context()).Info(err)
 		return errors.BadRequest("")
 	}
-	if err := input.Validate(); err != nil {
-		return err
-	}
 
 	err := r.depositService.Transfer(c.Request.Context(), input)
 	if err != nil {
@@ -95,9 +86,6 @@ func (r resource) history(c *routing.Context) error {
 	if err := c.Read(&input); err != nil {
 		r.logger.With(c.Request.Context()).Info(err)
 		return errors.BadRequest("")
-	}
-	if err := input.Validate(); err != nil {
-		return err
 	}
 
 	transactions, err := r.transactionService.GetHistory(c.Request.Context(), input)

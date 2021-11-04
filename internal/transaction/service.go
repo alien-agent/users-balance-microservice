@@ -38,6 +38,10 @@ func NewService(repo Repository, logger log.Logger) Service {
 }
 
 func (s service) CreateUpdateTransaction(ctx context.Context, req requests.UpdateBalanceRequest) (Transaction, error) {
+	if err := req.Validate(); err != nil {
+		return Transaction{}, err
+	}
+
 	ownerUUID := uuid.MustParse(req.OwnerId)
 	tx := entity.Transaction{
 		Description:     req.Description,
@@ -59,6 +63,10 @@ func (s service) CreateUpdateTransaction(ctx context.Context, req requests.Updat
 }
 
 func (s service) CreateTransferTransaction(ctx context.Context, req requests.TransferRequest) (Transaction, error) {
+	if err := req.Validate(); err != nil {
+		return Transaction{}, err
+	}
+
 	senderUUID, recipientUUID := uuid.MustParse(req.SenderId), uuid.MustParse(req.RecipientId)
 	tx := entity.Transaction{
 		Id:              0, // will be auto-incremented
@@ -77,6 +85,10 @@ func (s service) CreateTransferTransaction(ctx context.Context, req requests.Tra
 }
 
 func (s service) GetHistory(ctx context.Context, req requests.GetHistoryRequest) ([]entity.Transaction, error) {
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
 	ownerUUID := uuid.MustParse(req.OwnerId)
 	order := ""
 	if req.OrderBy != "" {
