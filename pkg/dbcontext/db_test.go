@@ -32,20 +32,20 @@ func TestDB_Transactional(t *testing.T) {
 		// successful transaction
 		err := dbc.Transactional(context.Background(), func(ctx context.Context) error {
 			_, err := dbc.With(ctx).Insert("dbcontexttest", dbx.Params{"id": "1", "name": "name1"}).Execute()
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			_, err = dbc.With(ctx).Insert("dbcontexttest", dbx.Params{"id": "2", "name": "name2"}).Execute()
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			return nil
 		})
-		assert.Nil(t, err)
+		assert.NoError(t, err)
 		assert.Equal(t, 2, runCountQuery(t, db))
 
 		// failed transaction
 		err = dbc.Transactional(context.Background(), func(ctx context.Context) error {
 			_, err := dbc.With(ctx).Insert("dbcontexttest", dbx.Params{"id": "3", "name": "name1"}).Execute()
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			_, err = dbc.With(ctx).Insert("dbcontexttest", dbx.Params{"id": "4", "name": "name2"}).Execute()
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			return sql.ErrNoRows
 		})
 		assert.Equal(t, sql.ErrNoRows, err)
@@ -54,9 +54,9 @@ func TestDB_Transactional(t *testing.T) {
 		// failed transaction, but queries made outside of the transaction
 		err = dbc.Transactional(context.Background(), func(ctx context.Context) error {
 			_, err := dbc.With(context.Background()).Insert("dbcontexttest", dbx.Params{"id": "3", "name": "name1"}).Execute()
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			_, err = dbc.With(context.Background()).Insert("dbcontexttest", dbx.Params{"id": "4", "name": "name2"}).Execute()
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			return sql.ErrNoRows
 		})
 		assert.Equal(t, sql.ErrNoRows, err)
@@ -77,12 +77,12 @@ func TestDB_TransactionHandler(t *testing.T) {
 			err := routing.NewContext(res, req, txHandler, func(c *routing.Context) error {
 				ctx := c.Request.Context()
 				_, err := dbc.With(ctx).Insert("dbcontexttest", dbx.Params{"id": "1", "name": "name1"}).Execute()
-				assert.Nil(t, err)
+				assert.NoError(t, err)
 				_, err = dbc.With(ctx).Insert("dbcontexttest", dbx.Params{"id": "2", "name": "name2"}).Execute()
-				assert.Nil(t, err)
+				assert.NoError(t, err)
 				return nil
 			}).Next()
-			assert.Nil(t, err)
+			assert.NoError(t, err)
 			assert.Equal(t, 2, runCountQuery(t, db))
 		}
 
@@ -93,9 +93,9 @@ func TestDB_TransactionHandler(t *testing.T) {
 			err := routing.NewContext(res, req, txHandler, func(c *routing.Context) error {
 				ctx := c.Request.Context()
 				_, err := dbc.With(ctx).Insert("dbcontexttest", dbx.Params{"id": "3", "name": "name1"}).Execute()
-				assert.Nil(t, err)
+				assert.NoError(t, err)
 				_, err = dbc.With(ctx).Insert("dbcontexttest", dbx.Params{"id": "4", "name": "name2"}).Execute()
-				assert.Nil(t, err)
+				assert.NoError(t, err)
 				return sql.ErrNoRows
 			}).Next()
 			assert.Equal(t, err, sql.ErrNoRows)
@@ -136,7 +136,7 @@ func runDBTest(t *testing.T, f func(db *dbx.DB)) {
 func runCountQuery(t *testing.T, db *dbx.DB) int {
 	var count int
 	err := db.NewQuery("SELECT COUNT(*) FROM dbcontexttest").Row(&count)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	return count
 
 }
