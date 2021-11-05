@@ -89,16 +89,14 @@ func (s service) GetHistory(ctx context.Context, req requests.GetHistoryRequest)
 		return nil, err
 	}
 
-	ownerUUID := uuid.MustParse(req.OwnerId)
-	order := ""
-	if req.OrderBy != "" {
-		order = req.OrderBy
-		if req.OrderDirection != "" {
-			order = order + " " + req.OrderDirection
-		}
+	// if limit not specified, set equal to -1(meaning no limit in SQL)
+	if req.Limit == 0 {
+		req.Limit = -1
 	}
 
-	return s.repo.GetForUser(ctx, ownerUUID, order, req.Offset, req.Limit)
+	ownerUUID := uuid.MustParse(req.OwnerId)
+
+	return s.repo.GetForUser(ctx, ownerUUID, req.OrderBy, req.OrderDirection, req.Offset, req.Limit)
 }
 
 func (s service) Count(ctx context.Context) (int64, error) {

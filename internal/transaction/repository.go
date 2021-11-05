@@ -17,7 +17,7 @@ type Repository interface {
 	Create(ctx context.Context, tx *entity.Transaction) error
 	Count(ctx context.Context) (int64, error)
 	// GetForUser returns a list of all transactions related to given userId.
-	GetForUser(ctx context.Context, ownerId uuid.UUID, order string, offset, limit int) ([]entity.Transaction, error)
+	GetForUser(ctx context.Context, ownerId uuid.UUID, orderBy, orderDirection string, offset, limit int) ([]entity.Transaction, error)
 }
 
 // repository persists Transaction in database
@@ -44,18 +44,19 @@ func (r repository) Count(ctx context.Context) (int64, error) {
 }
 
 // GetForUser returns all transactions from and to the user with given id.
-func (r repository) GetForUser(ctx context.Context, ownerId uuid.UUID, order string, offset, limit int) ([]entity.Transaction, error) {
+func (r repository) GetForUser(ctx context.Context, ownerId uuid.UUID, orderBy, orderDirection string, offset, limit int) ([]entity.Transaction, error) {
 	var result []entity.Transaction
-	query := r.db.With(ctx).Select().Where(dbx.Or(dbx.HashExp{"sender_id": ownerId}, dbx.HashExp{"recipient_id": ownerId}))
+	query := r.db.With(ctx).Select().
+		Where(dbx.Or(dbx.HashExp{"sender_id": ownerId}, dbx.HashExp{"recipient_id": ownerId})).
+		Offset(int64(offset)).
+		Limit(int64(limit))
 
-	if offset >= 0 {
-		query.Offset(int64(offset))
-	}
-	if limit > 0 {
-		query.Limit(int64(limit))
-	}
-	if order != "" {
-		query.OrderBy(order)
+	if orderBy != "" {
+		if orderDirection == "" {
+			query.OrderBy(orderBy)
+		} else {
+			query.OrderBy(orderBy + " " + orderDirection)
+		}
 	}
 
 	err := query.All(&result)

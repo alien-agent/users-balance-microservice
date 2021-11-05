@@ -79,6 +79,19 @@ func TestService_CreateUpdateTransaction(t *testing.T) {
 			assert.EqualValues(t, 0, count2-count)
 		}
 	}
+
+	// fail database error
+	tx, err = s.CreateUpdateTransaction(ctx, requests.UpdateBalanceRequest{
+		OwnerId:     "11111111-1111-1111-1111-111111111111",
+		Amount:      1000,
+		Description: "monthly subscription",
+	})
+	if assert.Error(t, err) {
+		count2, err := s.Count(ctx)
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, 0, count2-count)
+		}
+	}
 }
 
 func TestService_CreateTransferTransaction(t *testing.T) {
@@ -186,6 +199,20 @@ func TestService_CreateTransferTransaction(t *testing.T) {
 			assert.EqualValues(t, 0, count2-count)
 		}
 	}
+
+	// fail database error
+	tx, err = s.CreateTransferTransaction(ctx, requests.TransferRequest{
+		SenderId:    "11111111-1111-1111-1111-111111111111",
+		RecipientId: id2.String(),
+		Amount:      1000,
+		Description: "",
+	})
+	if assert.Error(t, err) {
+		count2, err := s.Count(ctx)
+		if assert.NoError(t, err) {
+			assert.EqualValues(t, 0, count2-count)
+		}
+	}
 }
 
 func TestService_GetHistory(t *testing.T) {
@@ -210,6 +237,24 @@ func TestService_GetHistory(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.Equal(t, txsList[:3], txs)
 	}
+
+	// success id2's transactions
+	txs, err = s.GetHistory(ctx, requests.GetHistoryRequest{OwnerId: id2.String()})
+	if assert.NoError(t, err) {
+		assert.Equal(t, txsList[:3], txs)
+	}
+
+	// fail invalid OwnerId
+	txs, err = s.GetHistory(ctx, requests.GetHistoryRequest{OwnerId: "123-456-789"})
+	assert.Error(t, err)
+
+	// fail invalid limit and offset
+	txs, err = s.GetHistory(ctx, requests.GetHistoryRequest{OwnerId: id1.String(), Limit: -1, Offset: -1})
+	assert.Error(t, err)
+
+	// fail database error
+	txs, err = s.GetHistory(ctx, requests.GetHistoryRequest{OwnerId: "11111111-1111-1111-1111-111111111111"})
+	assert.Error(t, err)
 }
 
 type mockTransactionRepository struct {
@@ -221,6 +266,11 @@ func (m *mockTransactionRepository) Create(ctx context.Context, tx *entity.Trans
 	if tx.Amount < 0 {
 		return databaseError
 	}
+	// simulate database error
+	if tx.SenderId.String() == "11111111-1111-1111-1111-111111111111" || tx.RecipientId.String() == "11111111-1111-1111-1111-111111111111" {
+		return databaseError
+	}
+
 	tx.Id = m.lastInsertedId
 	m.lastInsertedId++
 	m.items = append(m.items, *tx)
@@ -228,8 +278,13 @@ func (m *mockTransactionRepository) Create(ctx context.Context, tx *entity.Trans
 }
 
 // Offset, limit and order are ignored for simplicity
-func (m *mockTransactionRepository) GetForUser(ctx context.Context, ownerId uuid.UUID, order string, offset, limit int) ([]entity.Transaction, error) {
+func (m *mockTransactionRepository) GetForUser(ctx context.Context, ownerId uuid.UUID, orderBy, orderDirection string, offset, limit int) ([]entity.Transaction, error) {
 	var result []entity.Transaction
+
+	// simulate database error
+	if ownerId.String() == "11111111-1111-1111-1111-111111111111" {
+		return result, databaseError
+	}
 
 	for _, tx := range m.items {
 		if tx.SenderId == ownerId || tx.RecipientId == ownerId {

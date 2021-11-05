@@ -53,6 +53,8 @@ func TestService_GetBalance(t *testing.T) {
 	if assert.NoError(t, err) {
 		assert.EqualValues(t, 0, balance)
 	}
+
+	// get
 }
 
 func TestService_Update(t *testing.T) {

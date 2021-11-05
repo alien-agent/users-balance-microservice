@@ -24,7 +24,7 @@ func TestRepository(t *testing.T) {
 
 	// initial count
 	count, err := repo.Count(ctx)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// create (deposit withdrawal)
 	tx := entity.Transaction{
@@ -101,14 +101,41 @@ func TestRepository(t *testing.T) {
 	}
 
 	// list for user
-	txs, err := repo.GetForUser(ctx, id1, "", 0, 0)
+	txs, err := repo.GetForUser(ctx, id1, "", "", 0, -1)
 	if assert.NoError(t, err) {
 		assert.Len(t, txs, 3)
 	}
 
 	// list for user with pagination
-	txs, err = repo.GetForUser(ctx, id1, "", 1, 1)
+	txs, err = repo.GetForUser(ctx, id1, "", "", 1, 1)
 	if assert.NoError(t, err) {
 		assert.Len(t, txs, 1)
+	}
+
+	// list for user with order
+	txs, err = repo.GetForUser(ctx, id1, "amount", "", 0, -1)
+	if assert.NoError(t, err) {
+		assert.Len(t, txs, 3)
+
+		amounts := [3]int64{}
+		for i, v := range txs {
+			amounts[i] = v.Amount
+		}
+
+		// if no order specified, then default (ascending is used)
+		assert.IsNonDecreasing(t, amounts)
+	}
+
+	// list for user with order and direction
+	txs, err = repo.GetForUser(ctx, id1, "amount", "DESC", 0, -1)
+	if assert.NoError(t, err) {
+		assert.Len(t, txs, 3)
+
+		amounts := [3]int64{}
+		for i, v := range txs {
+			amounts[i] = v.Amount
+		}
+
+		assert.IsNonIncreasing(t, amounts)
 	}
 }

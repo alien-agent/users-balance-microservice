@@ -1,18 +1,13 @@
-/*
-For testing purposes, database failure is simulated if Deposit.OwnerId == "11111111-1111-1111-1111-111111111111" or
-if Transaction.SenderId or Transaction.RecipientId are equal to "22222222-2222-2222-2222-222222222222".
-*/
 package deposit
 
 import (
 	"context"
 	"net/http"
 	"testing"
-	"time"
 
+	dbx "github.com/go-ozzo/ozzo-dbx"
 	"github.com/google/uuid"
 	"users-balance-microservice/internal/entity"
-	"users-balance-microservice/internal/exchangerates"
 	"users-balance-microservice/internal/test"
 	"users-balance-microservice/internal/transaction"
 	"users-balance-microservice/pkg/dbcontext"
@@ -33,18 +28,29 @@ func TestAPI(t *testing.T) {
 	transactionRepo := mockTransactionRepository{
 		items: []entity.Transaction{},
 	}
-	exchangeService := exchangerates.NewService(30*time.Minute, logger)
+	exchangeService := mockExchangeRatesService{}
+
+	db, err := dbx.MustOpen("postgres", "postgres://127.0.0.1/postgres?sslmode=disable&user=postgres&password=postgres")
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
+	defer func() {
+		_ = db.Close()
+	}()
+	dbCtx := dbcontext.New(db) // in order for TransactionHandler() to work
+
 	RegisterHandlers(
 		router.Group(""),
 		NewService(depositRepo, exchangeService, logger),
 		transaction.NewService(&transactionRepo, logger),
 		logger,
-		dbcontext.New(nil),
+		dbCtx,
 	)
 
 	tests := []test.APITestCase{
 		{
-			"get balance existing",
+			"get balance success existing Deposit",
 			"POST",
 			"/deposits/balance",
 			`{"owner_id": "615f3e76-37d3-11ec-8d3d-0242ac130003"}`,
@@ -52,7 +58,7 @@ func TestAPI(t *testing.T) {
 			`1000`,
 		},
 		{
-			"get balance non-existing",
+			"get balance success non-existing Deposit",
 			"POST",
 			"/deposits/balance",
 			`{"owner_id": "8c5593a0-37d3-11ec-8d3d-0242ac130003"}`,
@@ -60,7 +66,7 @@ func TestAPI(t *testing.T) {
 			`0`,
 		},
 		{
-			"get balance invalid owner_id",
+			"get balance failure invalid owner_id",
 			"POST",
 			"/deposits/balance",
 			`{"owner_id": "0123456789"}`,
@@ -68,7 +74,7 @@ func TestAPI(t *testing.T) {
 			invalidIdResponse,
 		},
 		{
-			"get balance invalid request",
+			"get balance failure invalid request",
 			"POST",
 			"/deposits/balance",
 			`{"owner_id": `,
@@ -76,28 +82,12 @@ func TestAPI(t *testing.T) {
 			badRequestResponse,
 		},
 		{
-			"get balance invalid method",
+			"get balance failure invalid method",
 			"GET",
 			"/deposits/balance",
 			"",
 			http.StatusMethodNotAllowed,
 			"",
-		},
-		{
-			"update balance success",
-			"POST",
-			"/deposits/update",
-			`{"owner_id": "615f3e76-37d3-11ec-8d3d-0242ac130003", "amount": 500}`,
-			http.StatusOK,
-			"1231",
-		},
-		{
-			"get balance updated",
-			"POST",
-			"/deposits/balance",
-			`{"owner_id": "615f3e76-37d3-11ec-8d3d-0242ac130003"}`,
-			http.StatusOK,
-			`1500`,
 		},
 		{
 			"update balance success positive amount",
@@ -116,7 +106,7 @@ func TestAPI(t *testing.T) {
 			"",
 		},
 		{
-			"update balance fail not enough funds",
+			"update balance failure not enough funds",
 			"POST",
 			"/deposits/update",
 			`{"owner_id": "615f3e76-37d3-11ec-8d3d-0242ac130003", "amount": -55000}`,
@@ -124,21 +114,68 @@ func TestAPI(t *testing.T) {
 			"",
 		},
 		{
-			// Here the Deposit is updated, but the Transaction won't be created, so
-			"update balance database failure",
+			"update balance failure invalid request",
 			"POST",
 			"/deposits/update",
-			`{"owner_id":"22222222-2222-2222-2222-222222222222","amount":500,"description":"visa top-up"}`,
-			http.StatusInternalServerError,
+			`owner_id:"11111111-1111-1111-1111-111111111111"`,
+			http.StatusBadRequest,
 			"",
 		},
 		{
-			"get balance after failure unchanged",
+			"transfer successful",
 			"POST",
-			"/deposits/balance",
-			`{"owner_id":"22222222-2222-2222-2222-222222222222"}`,
+			"/deposits/transfer",
+			`{"sender_id":"615f3e76-37d3-11ec-8d3d-0242ac130003","recipient_id":"11111111-37d3-11ec-8d3d-0242ac130003","amount":100}`,
 			http.StatusOK,
-			"0",
+			"",
+		},
+		{
+			"transfer failure sender_id missing",
+			"POST",
+			"/deposits/transfer",
+			`{"recipient_id":"11111111-37d3-11ec-8d3d-0242ac130003","amount":100}`,
+			http.StatusBadRequest,
+			"",
+		},
+		{
+			"transfer failure invalid request",
+			"POST",
+			"/deposits/transfer",
+			`{recipient_id:11111111-37d3-11ec-8d3d-0242ac130003,"amount":100}`,
+			http.StatusBadRequest,
+			"",
+		},
+		{
+			"transfer failure insufficient sender's balance",
+			"POST",
+			"/deposits/transfer",
+			`{"sender_id":"615f3e76-37d3-11ec-8d3d-0242ac130003","recipient_id":"11111111-37d3-11ec-8d3d-0242ac130003","amount":1000000}`,
+			http.StatusBadRequest,
+			"",
+		},
+		{
+			"getHistory success",
+			"POST",
+			"/deposits/history",
+			`{"owner_id":"11112222-3333-4444-5555-666677778888"}`,
+			http.StatusOK,
+			"",
+		},
+		{
+			"getHistory fail invalid owner_id",
+			"POST",
+			"/deposits/history",
+			`{"owner_id":"123-456-789"}`,
+			http.StatusBadRequest,
+			"",
+		},
+		{
+			"getHistory fail invalid request",
+			"POST",
+			"/deposits/history",
+			`{owner_id: 123-456-789}`,
+			http.StatusBadRequest,
+			"",
 		},
 	}
 
@@ -156,11 +193,6 @@ func (m *mockTransactionRepository) Create(ctx context.Context, tx *entity.Trans
 	if tx.Amount < 0 {
 		return databaseError
 	}
-	// simulate database failure
-	if tx.SenderId.String() == "22222222-2222-2222-2222-222222222222" ||
-		tx.RecipientId.String() == "22222222-2222-2222-2222-222222222222" {
-		return databaseError
-	}
 
 	tx.Id = m.lastInsertedId
 	m.lastInsertedId++
@@ -169,7 +201,7 @@ func (m *mockTransactionRepository) Create(ctx context.Context, tx *entity.Trans
 }
 
 // Offset, limit and order are ignored for simplicity
-func (m *mockTransactionRepository) GetForUser(ctx context.Context, ownerId uuid.UUID, order string, offset, limit int) ([]entity.Transaction, error) {
+func (m *mockTransactionRepository) GetForUser(ctx context.Context, ownerId uuid.UUID, orderBy, orderDirection string, offset, limit int) ([]entity.Transaction, error) {
 	var result []entity.Transaction
 
 	for _, tx := range m.items {

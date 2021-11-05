@@ -45,10 +45,9 @@ func (s service) modifyBalance(ctx context.Context, ownerId uuid.UUID, amount in
 	dep, err := s.repo.Get(ctx, ownerId)
 
 	// If deposit is not in DB yet, create it.
-	if err == sql.ErrNoRows && amount > 0 {
+	if err == sql.ErrNoRows {
 		dep = entity.Deposit{OwnerId: ownerId}
-		err = s.repo.Create(ctx, dep)
-		if err != nil {
+		if err = s.repo.Create(ctx, dep); err != nil {
 			return err
 		}
 	} else if err != nil {
@@ -89,7 +88,6 @@ func (s service) GetBalance(ctx context.Context, req requests.GetBalanceRequest)
 }
 
 // Update changes the balance of Deposit according to UpdateBalanceRequest.
-// This method also creates a Transaction record in the database.
 // It returns the Transaction which reflects the corresponding balance change in case of success.
 func (s service) Update(ctx context.Context, req requests.UpdateBalanceRequest) error {
 	if err := req.Validate(); err != nil {

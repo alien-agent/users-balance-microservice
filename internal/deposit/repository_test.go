@@ -24,7 +24,7 @@ func TestRepository(t *testing.T) {
 
 	// initial count
 	count, err := repo.Count(ctx)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	// create deposit
 	err = repo.Create(ctx, dep)
