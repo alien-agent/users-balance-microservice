@@ -5,7 +5,6 @@ import (
 	"users-balance-microservice/internal/errors"
 	"users-balance-microservice/internal/requests"
 	"users-balance-microservice/internal/transaction"
-	"users-balance-microservice/pkg/dbcontext"
 	"users-balance-microservice/pkg/log"
 )
 
@@ -15,13 +14,13 @@ func RegisterHandlers(
 	depositService Service,
 	transactionService transaction.Service,
 	logger log.Logger,
-	db *dbcontext.DB,
+	transactionHandler routing.Handler,
 ) {
 	res := resource{depositService, transactionService, logger}
 
 	r.Post("/deposits/balance", res.getBalance)
-	r.Post("/deposits/update", db.TransactionHandler(), res.updateBalance)
-	r.Post("/deposits/transfer", db.TransactionHandler(), res.transfer)
+	r.Post("/deposits/update", transactionHandler, res.updateBalance)
+	r.Post("/deposits/transfer", transactionHandler, res.transfer)
 	r.Post("/deposits/history", res.history)
 }
 

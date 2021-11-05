@@ -45,7 +45,7 @@ func TestAPI(t *testing.T) {
 		NewService(depositRepo, exchangeService, logger),
 		transaction.NewService(&transactionRepo, logger),
 		logger,
-		dbCtx,
+		dbCtx.TransactionHandler(),
 	)
 
 	tests := []test.APITestCase{

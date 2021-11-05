@@ -86,7 +86,7 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 		deposit.NewService(deposit.NewRepository(db, logger), exchangerates.NewService(10*time.Minute, logger), logger),
 		transaction.NewService(transaction.NewRepository(db, logger), logger),
 		logger,
-		db,
+		db.TransactionHandler(),
 	)
 
 	return router
