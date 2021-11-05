@@ -18,6 +18,7 @@ import (
 	"users-balance-microservice/internal/errors"
 	"users-balance-microservice/internal/exchangerates"
 	"users-balance-microservice/internal/transaction"
+	"users-balance-microservice/pkg/accesslog"
 	"users-balance-microservice/pkg/dbcontext"
 	"users-balance-microservice/pkg/log"
 )
@@ -72,7 +73,7 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 	router := routing.New()
 
 	router.Use(
-		// accesslog.Handler(logger),
+		accesslog.Handler(logger),
 		errors.Handler(logger),
 		content.TypeNegotiator(content.JSON),
 		cors.Handler(cors.AllowAll),
