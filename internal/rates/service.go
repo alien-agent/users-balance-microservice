@@ -36,8 +36,8 @@ func NewService(expiry time.Duration, logger log.Logger) RatesService {
 	return service{cache: cacheService, logger: logger}
 }
 
-// RatesResponse holds an API response with a list of RUB\CURRENCY ratios for all currencies.
-type RatesResponse struct {
+// ratesResponse holds an API response with a list of RUB\CURRENCY ratios for all currencies.
+type ratesResponse struct {
 	Rates map[string]float32 `json:"rates"`
 }
 
@@ -76,7 +76,7 @@ func (s service) fetch() error {
 	}
 	defer response.Body.Close()
 
-	latest := RatesResponse{}
+	latest := ratesResponse{}
 	err = json.NewDecoder(response.Body).Decode(&latest)
 	if err != nil {
 		return err

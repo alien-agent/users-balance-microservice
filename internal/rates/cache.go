@@ -22,8 +22,8 @@ func (s *CacheService) Get(code string) (float32, bool) {
 	return 0, false
 }
 
-// Store unpacks currencies and corresponding rates from RatesResponse and saves them to cache.
-func (s *CacheService) Store(rsp *RatesResponse) {
+// Store unpacks currencies and corresponding rates from ratesResponse and saves them to cache.
+func (s *CacheService) Store(rsp *ratesResponse) {
 	for code, rate := range rsp.Rates {
 		s.store.Set(code, rate, cache.DefaultExpiration)
 	}
