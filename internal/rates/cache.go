@@ -1,4 +1,4 @@
-package exchangerates
+package rates
 
 import (
 	"github.com/patrickmn/go-cache"

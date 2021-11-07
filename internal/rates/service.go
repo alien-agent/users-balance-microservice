@@ -1,4 +1,4 @@
-package exchangerates
+package rates
 
 import (
 	"encoding/json"
