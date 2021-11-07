@@ -32,12 +32,12 @@ type Transaction struct {
 
 type service struct {
 	repo            Repository
-	exchangeService rates.RatesService
+	exchangeService rates.ExchangeRatesService
 	logger          log.Logger
 }
 
 // NewService creates a new Deposit depositService.
-func NewService(depositRepo Repository, exchangeService rates.RatesService, logger log.Logger) Service {
+func NewService(depositRepo Repository, exchangeService rates.ExchangeRatesService, logger log.Logger) Service {
 	return service{depositRepo, exchangeService, logger}
 }
 

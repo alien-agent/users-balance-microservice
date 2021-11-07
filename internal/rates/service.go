@@ -18,8 +18,8 @@ const (
 
 var currencyUnavailableError = errors.New("currency is not present in either cache or API response")
 
-// RatesService handles exchange rates.
-type RatesService interface {
+// ExchangeRatesService provides exchange rates for currencies.
+type ExchangeRatesService interface {
 	// Get returns the exchange ratio for specific currency code against baseCurrency(RUB).
 	Get(code string) (float32, error)
 }
@@ -30,7 +30,7 @@ type service struct {
 }
 
 // NewService creates a new exchange rates service.
-func NewService(expiry time.Duration, logger log.Logger) RatesService {
+func NewService(expiry time.Duration, logger log.Logger) ExchangeRatesService {
 	store := cache.New(expiry, 5*time.Minute)
 	cacheService := NewCacheService(store)
 	return service{cache: cacheService, logger: logger}
