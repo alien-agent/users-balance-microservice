@@ -1,0 +1,24 @@
+version: '3.9'
+services:
+  db:
+    image: "postgres:alpine"
+    volumes:
+      - ./postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
+  server:
+    image: server
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: cmd/server/Dockerfile
+    volumes:
+      - /tmp/app:/var/log/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
