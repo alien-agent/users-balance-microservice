@@ -2,6 +2,7 @@ package config
 
 import (
 	"io/ioutil"
+	"time"
 
 	_ "github.com/lib/pq"
 	"gopkg.in/yaml.v2"
@@ -14,6 +15,8 @@ const defaultServerPort = 8080
 type Config struct {
 	// the server port. Defaults to 8080.
 	ServerPort int `yaml:"server_port" env:"SERVER_PORT"`
+	// the expiration time of currency rates. Defaults to 10 minutes.
+	RatesExpiration time.Duration `yaml:"rates_expiration"`
 	// the data source name (DSN) for connecting to the database. Required.
 	DSN string `yaml:"dsn"`
 }
@@ -22,7 +25,8 @@ type Config struct {
 func Load(file string, logger log.Logger) (*Config, error) {
 	// default config
 	c := Config{
-		ServerPort: defaultServerPort,
+		ServerPort:      defaultServerPort,
+		RatesExpiration: 10 * time.Minute,
 	}
 
 	// load from YAML config file

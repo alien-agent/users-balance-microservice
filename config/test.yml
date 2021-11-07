@@ -1,3 +1,2 @@
 server_port: 8080
 dsn: "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
-driver: "pgx"

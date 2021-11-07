@@ -16,7 +16,7 @@ import (
 	"users-balance-microservice/internal/config"
 	"users-balance-microservice/internal/deposit"
 	"users-balance-microservice/internal/errors"
-	"users-balance-microservice/internal/exchangerates"
+	"users-balance-microservice/internal/rates"
 	"users-balance-microservice/internal/transaction"
 	"users-balance-microservice/pkg/accesslog"
 	"users-balance-microservice/pkg/dbcontext"
@@ -39,7 +39,7 @@ func main() {
 	}
 
 	// connect to the database
-	db, err := dbx.MustOpen("postgres", cfg.StorageUrl)
+	db, err := dbx.MustOpen("postgres", cfg.DSN)
 	if err != nil {
 		logger.Error(err)
 		os.Exit(-1)
@@ -83,7 +83,7 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	deposit.RegisterHandlers(
 		rg.Group(""),
-		deposit.NewService(deposit.NewRepository(db, logger), exchangerates.NewService(10*time.Minute, logger), logger),
+		deposit.NewService(deposit.NewRepository(db, logger), rates.NewService(cfg.RatesExpiration, logger), logger),
 		transaction.NewService(transaction.NewRepository(db, logger), logger),
 		logger,
 		db.TransactionHandler(),
