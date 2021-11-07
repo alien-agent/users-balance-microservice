@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"users-balance-microservice/internal/entity"
 	"users-balance-microservice/internal/errors"
-	"users-balance-microservice/internal/exchangerates"
+	"users-balance-microservice/internal/rates"
 	"users-balance-microservice/internal/requests"
 	"users-balance-microservice/pkg/log"
 )
@@ -32,12 +32,12 @@ type Transaction struct {
 
 type service struct {
 	repo            Repository
-	exchangeService exchangerates.RatesService
+	exchangeService rates.RatesService
 	logger          log.Logger
 }
 
 // NewService creates a new Deposit depositService.
-func NewService(depositRepo Repository, exchangeService exchangerates.RatesService, logger log.Logger) Service {
+func NewService(depositRepo Repository, exchangeService rates.RatesService, logger log.Logger) Service {
 	return service{depositRepo, exchangeService, logger}
 }
 

@@ -26,7 +26,7 @@ func DB(t *testing.T) *dbcontext.DB {
 		t.Error(err)
 		t.FailNow()
 	}
-	dbc, err := dbx.MustOpen("postgres", cfg.StorageUrl)
+	dbc, err := dbx.MustOpen("postgres", cfg.DSN)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
