@@ -8,6 +8,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing/v2/content"
 	"github.com/go-ozzo/ozzo-routing/v2/cors"
 	"users-balance-microservice/internal/errors"
+	"users-balance-microservice/pkg/accesslog"
 	"users-balance-microservice/pkg/log"
 )
 
@@ -26,7 +27,7 @@ func MockRoutingContext(req *http.Request) (*routing.Context, *httptest.Response
 func MockRouter(logger log.Logger) *routing.Router {
 	router := routing.New()
 	router.Use(
-		// accesslog.Handler(logger),
+		accesslog.Handler(logger),
 		errors.Handler(logger),
 		content.TypeNegotiator(content.JSON),
 		cors.Handler(cors.AllowAll),
