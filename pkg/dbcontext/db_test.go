@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const DSN = "postgres://127.0.0.1/postgres?sslmode=disable&user=postgres&password=postgres"
+const DSN = "postgres://postgres:postgres@127.0.0.1/postgres?sslmode=disable"
 
 func TestNew(t *testing.T) {
 	runDBTest(t, func(db *dbx.DB) {
