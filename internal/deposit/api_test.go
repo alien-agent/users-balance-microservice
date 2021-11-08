@@ -5,12 +5,11 @@ import (
 	"net/http"
 	"testing"
 
-	dbx "github.com/go-ozzo/ozzo-dbx"
+	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/google/uuid"
 	"users-balance-microservice/internal/entity"
 	"users-balance-microservice/internal/test"
 	"users-balance-microservice/internal/transaction"
-	"users-balance-microservice/pkg/dbcontext"
 	"users-balance-microservice/pkg/log"
 )
 
@@ -29,23 +28,14 @@ func TestAPI(t *testing.T) {
 		items: []entity.Transaction{},
 	}
 	exchangeService := mockExchangeRatesService{}
-
-	db, err := dbx.MustOpen("postgres", "postgres://127.0.0.1/postgres?sslmode=disable&user=postgres&password=postgres")
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	defer func() {
-		_ = db.Close()
-	}()
-	dbCtx := dbcontext.New(db) // in order for TransactionHandler() to work
+	transactionHandler := func(c *routing.Context) error { return c.Next() }
 
 	RegisterHandlers(
 		router.Group(""),
 		NewService(depositRepo, exchangeService, logger),
 		transaction.NewService(&transactionRepo, logger),
 		logger,
-		dbCtx.TransactionHandler(),
+		transactionHandler,
 	)
 
 	tests := []test.APITestCase{
