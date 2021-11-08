@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	_ "github.com/lib/pq"
+	"github.com/qiangxue/go-env"
 	"gopkg.in/yaml.v2"
 	"users-balance-microservice/pkg/log"
 )
@@ -38,10 +38,10 @@ func Load(file string, logger log.Logger) (*Config, error) {
 		return nil, err
 	}
 
-	/* load from environment variables prefixed with "APP_"
+	// load from environment variables prefixed with "APP_"
 	if err = env.New("APP_", logger.Infof).Load(&c); err != nil {
 		return nil, err
-	}*/
+	}
 
 	return &c, err
 }
