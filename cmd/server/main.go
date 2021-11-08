@@ -13,6 +13,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/go-ozzo/ozzo-routing/v2/content"
 	"github.com/go-ozzo/ozzo-routing/v2/cors"
+	_ "github.com/lib/pq"
 	"users-balance-microservice/internal/config"
 	"users-balance-microservice/internal/deposit"
 	"users-balance-microservice/internal/errors"
