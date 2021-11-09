@@ -22,7 +22,6 @@ docker-compose up
 ```
 docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
 ```
-При запуске средствами Docker используется файл конфигурации сервиса `local.yml`. Парамеры
 ## Детали реализации
 Микросервис написан на Go, СУБД - PostgreSQL. Все запросы/ответы принимаются/отдаются в формате JSON.
 
