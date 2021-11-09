@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  server_test:
+    container_name: api_server_test
+    build:
+      context: .
+      dockerfile: cmd/server/Dockerfile.test
+    depends_on:
+      - postgres_test
+    environment:
+        APP_DSN: "postgresql://postgres:postgres@db_postgres_test:5432/postgres?sslmode=disable"
+
+  postgres_test:
+    image: postgres:alpine
+    container_name: db_postgres_test
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - DATABASE_HOST=db_postgres_test
+    ports:
+      - '5555:5432'
+    volumes:
+      - ./postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql

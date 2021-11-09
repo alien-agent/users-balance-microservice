@@ -1,0 +1,19 @@
+FROM golang:alpine
+RUN apk update && \
+    apk add curl \
+            git \
+            bash \
+            make \
+            ca-certificates && \
+    rm -rf /var/cache/apk/*
+
+WORKDIR /app
+
+# Copy the source from the source directory to the working directory inside the container
+COPY ../../ .
+
+RUN go mod download
+RUN go mod verify
+
+# Run tests
+CMD CGO_ENABLED=0 go test ./...
