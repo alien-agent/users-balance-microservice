@@ -1,24 +1,26 @@
 version: '3.9'
 services:
-  db:
-    image: "postgres:alpine"
+  server:
+    container_name: api_server
+    build:
+      context: .
+      dockerfile: cmd/server/Dockerfile
+    environment:
+      APP_DSN: "postgresql://postgres:postgres@db_postgres:5432/postgres?sslmode=disable"
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    depends_on:
+      - postgres
+  postgres:
+    image: postgres:alpine
+    container_name: db_postgres
     volumes:
       - ./postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_DB: "postgres"
-  server:
-    image: server
-    restart: on-failure
-    build:
-      context: .
-      dockerfile: cmd/server/Dockerfile
-    volumes:
-      - /tmp/app:/var/log/app
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      DATABASE_HOST: db_postgres
