@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var nilUuidString = "00000000-0000-0000-0000-000000000000"
+
 type validationTestcase struct {
 	name      string
 	model     Request
@@ -28,8 +30,9 @@ func TestGetBalanceRequest_Validate(t *testing.T) {
 	testValidation(t, []validationTestcase{
 		{"success", GetBalanceRequest{OwnerId: id1}, false},
 		{"success with currency", GetBalanceRequest{OwnerId: id1, Currency: "EUR"}, false},
-		{"missing OwnerId", GetBalanceRequest{OwnerId: ""}, true},
-		{"invalid OwnerId", GetBalanceRequest{OwnerId: "12712912"}, true},
+		{"fail missing OwnerId", GetBalanceRequest{OwnerId: ""}, true},
+		{"fail invalid OwnerId", GetBalanceRequest{OwnerId: "12712912"}, true},
+		{"fail nil OwnerId", GetBalanceRequest{OwnerId: nilUuidString}, true},
 		{"fail invalid currency", GetBalanceRequest{OwnerId: id1, Currency: "EURUSDPLT"}, true},
 	})
 }
@@ -42,6 +45,7 @@ func TestUpdateBalanceRequest_Validate(t *testing.T) {
 		{"success no description", UpdateBalanceRequest{id1, 500, ""}, false},
 		{"fail zero amount", UpdateBalanceRequest{id1, 0, ""}, true},
 		{"fail invalid OwnerId", UpdateBalanceRequest{"i'm invalid", 500, ""}, true},
+		{"fail nil OwnerId", UpdateBalanceRequest{nilUuidString, 500, ""}, true},
 		{"fail too long description", UpdateBalanceRequest{id1, 500, strings.Repeat("test", 100)}, true},
 	})
 }
@@ -56,6 +60,8 @@ func TestTransferRequest_Validate(t *testing.T) {
 		{"fail missing missing RecipientId", TransferRequest{id1, "", 500, ""}, true},
 		{"fail SenderId invalid", TransferRequest{"124124-12412-12412", id2, 500, ""}, true},
 		{"fail RecipientId invalid", TransferRequest{id1, "982312-124-124-43", 500, ""}, true},
+		{"fail nil SenderId", TransferRequest{nilUuidString, id2, 500, ""}, true},
+		{"fail nil RecipientId", TransferRequest{id1, nilUuidString, 500, ""}, true},
 		{"fail description too long", TransferRequest{id1, id2, 500, strings.Repeat("test", 100)}, true},
 	})
 }
@@ -69,12 +75,9 @@ func TestGetHistoryRequest_Validate(t *testing.T) {
 		{"success all params", GetHistoryRequest{id1, 10, 5, "transaction_date", "DESC"}, false},
 		{"fail missing OwnerId", GetHistoryRequest{OwnerId: ""}, true},
 		{"fail invalid OwnerId", GetHistoryRequest{OwnerId: "128312-1241-12"}, true},
+		{"fail nil OwnerId", GetHistoryRequest{OwnerId: nilUuidString}, true},
 		{"fail invalid OrderBy", GetHistoryRequest{OwnerId: id1, OrderBy: "owner_id"}, true},
-		{
-			"fail invalid OrderDirection",
-			GetHistoryRequest{OwnerId: id1, OrderBy: "amount", OrderDirection: "MEDIAN"},
-			true,
-		},
+		{"fail invalid OrderDirection", GetHistoryRequest{OwnerId: id1, OrderBy: "amount", OrderDirection: "MEDIAN"}, true},
 		{"fail negative offset", GetHistoryRequest{OwnerId: id1, Offset: -10}, true},
 		{"fail negative limit", GetHistoryRequest{OwnerId: id1, Limit: -5}, true},
 	})
