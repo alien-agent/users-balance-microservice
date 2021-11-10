@@ -56,7 +56,7 @@ func (s service) modifyBalance(ctx context.Context, ownerId uuid.UUID, amount in
 
 	dep.Balance += amount
 	if dep.Balance < 0 {
-		return errors.BadRequest("Insufficient funds to perform operation.")
+		return errors.Forbidden("Insufficient funds to perform operation.")
 	}
 
 	return s.repo.Update(ctx, dep)
