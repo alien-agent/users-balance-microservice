@@ -15,5 +15,5 @@ CREATE TABLE IF NOT EXISTS Transaction(
     transaction_date TIMESTAMP NOT NULL,
 
     CONSTRAINT chk_amount_not_negative
-    CHECK(amount >= 0)
+    CHECK(amount > 0)
 );
