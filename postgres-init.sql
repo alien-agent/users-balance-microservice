@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS Deposit(
 );
 
 CREATE TABLE IF NOT EXISTS Transaction(
-    id serial PRIMARY KEY,
+    id bigserial PRIMARY KEY,
     sender_id UUID NULL,
     recipient_id UUID NULL,
     amount BIGINT NOT NULL,
