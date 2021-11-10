@@ -1,0 +1,191 @@
+{
+	"info": {
+		"_postman_id": "261d2617-ee2b-426a-8579-c986fb4a6717",
+		"name": "users-balance-microservice",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Пополнение баланса",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac130001\",\r\n    \"amount\": 5000,\r\n    \"description\": \"VISA top-up\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": ":8080/v1/deposits/update",
+					"port": "8080",
+					"path": [
+						"v1",
+						"deposits",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Проверка баланса",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac130001\",\r\n    \"currency\": \"RUB\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": ":8080/v1/deposits/balance",
+					"port": "8080",
+					"path": [
+						"v1",
+						"deposits",
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Перевод другому пользователю",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"sender_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac001\",\r\n    \"recipient_id\": \"6e726185-586e-49a7-89a4-6cfc2b03b0a2\",\r\n    \"amount\" : -300,\r\n    \"description\": \"happy birthday!\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": ":8080/v1/deposits/transfer",
+					"port": "8080",
+					"path": [
+						"v1",
+						"deposits",
+						"transfer"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Списание с баланса",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac130001\",\r\n    \"amount\": -490,\r\n    \"description\": \"montly subscription\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": ":8080/v1/deposits/update",
+					"port": "8080",
+					"path": [
+						"v1",
+						"deposits",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Отказ в списании - недостаточно средств",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac130001\",\r\n    \"amount\": -50000,\r\n    \"description\": \"hack3r attack\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": ":8080/v1/deposits/update",
+					"port": "8080",
+					"path": [
+						"v1",
+						"deposits",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Проверка баланса USD",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac130001\",\r\n    \"currency\": \"RUB\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": ":8080/v1/deposits/balance",
+					"port": "8080",
+					"path": [
+						"v1",
+						"deposits",
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "История операций",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac131111\",\r\n    \"offset\": 0,\r\n    \"limit\": 5,\r\n    \"order_by\": \"amount\",\r\n    \"order_direction\": \"DESC\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": ":8080/v1/deposits/history",
+					"port": "8080",
+					"path": [
+						"v1",
+						"deposits",
+						"history"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
