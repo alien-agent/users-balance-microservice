@@ -1,4 +1,4 @@
-// Package dbcontext provides DB transaction support for transactions tha span method calls of multiple
+// Package dbcontext provides DB transaction support for transactions that span method calls of multiple
 // repositories and services.
 package dbcontext
 
