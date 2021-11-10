@@ -100,7 +100,7 @@ func TestAPI(t *testing.T) {
 			"POST",
 			"/deposits/update",
 			`{"owner_id": "615f3e76-37d3-11ec-8d3d-0242ac130003", "amount": -55000}`,
-			http.StatusBadRequest,
+			http.StatusForbidden,
 			"",
 		},
 		{
@@ -140,7 +140,7 @@ func TestAPI(t *testing.T) {
 			"POST",
 			"/deposits/transfer",
 			`{"sender_id":"615f3e76-37d3-11ec-8d3d-0242ac130003","recipient_id":"11111111-37d3-11ec-8d3d-0242ac130003","amount":1000000}`,
-			http.StatusBadRequest,
+			http.StatusForbidden,
 			"",
 		},
 		{
