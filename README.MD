@@ -70,7 +70,7 @@ ID отправителя и получателя являются "позици
 
 ## Описание API
 
-Детальное описание каждого endpoint'а открывается по клику.
+Детальное описание каждого endpoint'а с примерами открывается по клику:
 
 - [Получить баланс пользователя](https://github.com/alien-agent/users-balance-microservice/blob/master/docs/balance.md)
 :`POST /v1/deposits/balance`
@@ -80,6 +80,9 @@ ID отправителя и получателя являются "позици
 :`POST /v1/deposits/transfer`
 - [Получить историю операций пользователя](https://github.com/alien-agent/users-balance-microservice/blob/master/docs/history.md)
 :`POST /v1/deposits/history`
+
+Также есть небольшая коллекция запросов для запуска в Postman, которая находится в файле [postman_examples.json](https://github.com/alien-agent/users-balance-microservice/blob/master/postman_examples.json).
+Для получения ожидаемых ответов сервера рекомендуется отправлять запросы в исходном порядке.
 
 ## Project Layout
 
