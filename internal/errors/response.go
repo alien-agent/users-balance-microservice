@@ -35,6 +35,17 @@ func InternalServerError(msg string) ErrorResponse {
 	}
 }
 
+// Forbidden creates a new error response representing a forbidden error (HTTP 403)
+func Forbidden(msg string) ErrorResponse {
+	if msg == "" {
+		msg = "You don't have permission to perform requested action."
+	}
+	return ErrorResponse{
+		Status:  http.StatusForbidden,
+		Message: msg,
+	}
+}
+
 // NotFound creates a new error response representing a resource-not-found error (HTTP 404)
 func NotFound(msg string) ErrorResponse {
 	if msg == "" {
