@@ -5,6 +5,8 @@ import (
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 )
 
+var notNilUuidRule = validation.NotIn("00000000-0000-0000-0000-000000000000").Error("value cannot be Nil UUID.")
+
 // Request represents a JSON data of an API request.
 type Request interface {
 	// Validate validates the request's fields.
@@ -20,7 +22,7 @@ type GetBalanceRequest struct {
 // Validate validates the GetBalanceRequest fields.
 func (r GetBalanceRequest) Validate() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.OwnerId, validation.Required, is.UUID),
+		validation.Field(&r.OwnerId, validation.Required, is.UUID, notNilUuidRule),
 		validation.Field(&r.Currency, is.CurrencyCode),
 	)
 }
@@ -34,7 +36,7 @@ type UpdateBalanceRequest struct {
 
 func (r UpdateBalanceRequest) Validate() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.OwnerId, validation.Required, is.UUID),
+		validation.Field(&r.OwnerId, validation.Required, is.UUID, notNilUuidRule),
 		validation.Field(&r.Amount, validation.Required),
 		validation.Field(&r.Description, validation.Length(0, 100)),
 	)
@@ -51,8 +53,8 @@ type TransferRequest struct {
 // Validate validates the TransferRequest fields.
 func (r TransferRequest) Validate() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.SenderId, validation.Required, is.UUID),
-		validation.Field(&r.RecipientId, validation.Required, is.UUID),
+		validation.Field(&r.SenderId, validation.Required, is.UUID, notNilUuidRule),
+		validation.Field(&r.RecipientId, validation.Required, is.UUID, notNilUuidRule),
 		validation.Field(&r.Amount, validation.Required, validation.Min(0).Exclusive()),
 		validation.Field(&r.Description, validation.Length(0, 100)),
 	)
@@ -70,7 +72,7 @@ type GetHistoryRequest struct {
 // Validate validates the GetHistoryRequest.
 func (r GetHistoryRequest) Validate() error {
 	return validation.ValidateStruct(&r,
-		validation.Field(&r.OwnerId, validation.Required, is.UUID),
+		validation.Field(&r.OwnerId, validation.Required, is.UUID, notNilUuidRule),
 		validation.Field(&r.Offset, validation.Min(0)),
 		validation.Field(&r.Limit, validation.Min(1)),
 		validation.Field(&r.OrderBy, validation.In("transaction_date", "amount")),
