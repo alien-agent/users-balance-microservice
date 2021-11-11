@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "261d2617-ee2b-426a-8579-c986fb4a6717",
-		"name": "users-balance-microservice",
+		"_postman_id": "b20755e1-599a-403b-96c0-da8ed0d106f0",
+		"name": "users-balance-microservice Copy",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -64,7 +64,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"sender_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac001\",\r\n    \"recipient_id\": \"6e726185-586e-49a7-89a4-6cfc2b03b0a2\",\r\n    \"amount\" : -300,\r\n    \"description\": \"happy birthday!\"\r\n}",
+					"raw": "{\r\n    \"sender_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac130001\",\r\n    \"recipient_id\": \"6e726185-586e-49a7-89a4-6cfc2b03b0a2\",\r\n    \"amount\" : 300,\r\n    \"description\": \"happy birthday!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -142,7 +142,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac130001\",\r\n    \"currency\": \"RUB\"\r\n}",
+					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac130001\",\r\n    \"currency\": \"USD\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -168,7 +168,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac131111\",\r\n    \"offset\": 0,\r\n    \"limit\": 5,\r\n    \"order_by\": \"amount\",\r\n    \"order_direction\": \"DESC\"\r\n}",
+					"raw": "{\r\n    \"owner_id\": \"8c5593a0-37d3-11ec-8d3d-0242ac130001\",\r\n    \"offset\": 0,\r\n    \"limit\": 5,\r\n    \"order_by\": \"amount\",\r\n    \"order_direction\": \"DESC\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
