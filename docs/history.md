@@ -89,10 +89,6 @@
   "message": "There is some problem with the data you submitted.",
   "details": [
     {
-      "field": "amount",
-      "error": "must be greater than 0"
-    },
-    {
       "field": "owner_id",
       "error": "must be a valid UUID"
     }
