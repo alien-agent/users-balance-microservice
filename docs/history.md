@@ -28,8 +28,8 @@
 {
   "owner_id": "8c5593a0-37d3-11ec-8d3d-0242ac130001",
   "offset": 0,
-  "limit: 2,
-  "order_by: "amount",
+  "limit": 2,
+  "order_by": "amount",
   "order_direction": "DESC"
 }
 ```
