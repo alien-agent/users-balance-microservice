@@ -26,10 +26,11 @@
 
 ```json
 {
-  "sender_id": "8c5593a0-37d3-11ec-8d3d-0242ac130001",
-  "recipient_id": "6e726185-586e-49a7-89a4-6cfc2b03b0a2",
-  "amount" : 300,
-  "description": "happy birthday!"
+  "owner_id": "8c5593a0-37d3-11ec-8d3d-0242ac130001",
+  "offset": 0,
+  "limit: 2,
+  "order_by: "amount",
+  "order_direction": "DESC"
 }
 ```
 
